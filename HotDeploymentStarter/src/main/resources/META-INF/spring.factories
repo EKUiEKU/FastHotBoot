@@ -1,0 +1,7 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.example.hotdeploymentstarter.autoconfiguration.HotDeploymentAutoConfiguration
+
+org.springframework.context.ApplicationListener=\
+  com.example.hotdeploymentstarter.listener.HotDeploymentContextRefreshListener,\
+  com.example.hotdeploymentstarter.listener.HotDeploymentStartListener,\
+  com.example.hotdeploymentstarter.listener.HotDeploymentStopListener
