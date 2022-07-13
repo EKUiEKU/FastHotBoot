@@ -1,5 +1,6 @@
-package com.example.hotdeploymentstarter.autoconfiguration;
+package com.example.hotdeploymentstarter.entity;
 
+import cn.hutool.core.util.HexUtil;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +13,7 @@ public class HotDeployProperties {
     /**
      * 是否开启热部署
      */
-    private Boolean enable;
+    private Boolean enable = true;
     /**
      * 开启远程更新,监听的端口
      */
@@ -21,6 +22,10 @@ public class HotDeployProperties {
      * 热更新文件保存的路径
      */
     private String classFilePath = "~";
+    /**
+     * 加密的盐
+     */
+    private String ascSalt = HexUtil.encodeHexStr("hotDeploy");
 
     public Boolean getEnable() {
         return enable;
@@ -44,5 +49,13 @@ public class HotDeployProperties {
 
     public void setClassFilePath(String classFilePath) {
         this.classFilePath = classFilePath;
+    }
+
+    public String getAscSalt() {
+        return ascSalt;
+    }
+
+    public void setAscSalt(String ascSalt) {
+        this.ascSalt = ascSalt;
     }
 }

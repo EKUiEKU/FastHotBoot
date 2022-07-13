@@ -1,4 +1,4 @@
-package com.example.hotdeploymentstarter.autoconfiguration;
+package com.example.hotdeploymentstarter.entity;
 
 /**
  * @author: WSC
