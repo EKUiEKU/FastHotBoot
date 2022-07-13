@@ -1,5 +1,7 @@
 package com.example.hotdeploymentstarter.entity;
 
+import java.util.Objects;
+
 /**
  * @author: WSC
  * @DATE: 2022/7/14
@@ -34,4 +36,21 @@ public class HotDeploymentClass {
      * 文件部署到程序的时间
      */
     private Long deployTime;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        HotDeploymentClass that = (HotDeploymentClass) o;
+        return hash.equals(that.hash) && classPath.equals(that.classPath) && className.equals(that.className) && uploader.equals(that.uploader) && uploadIp.equals(that.uploadIp) && uploadTime.equals(that.uploadTime) && deployTime.equals(that.deployTime);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(hash, classPath, className, uploader, uploadIp, uploadTime, deployTime);
+    }
 }
