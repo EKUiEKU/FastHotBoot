@@ -6,7 +6,7 @@ target/
 !**/src/test/**/target/
 !**/**/src/main/**/target/
 !**/**/src/test/**/target/
-!.idea
+.idea
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
