@@ -37,6 +37,62 @@ public class HotDeploymentClass {
      */
     private Long deployTime;
 
+    public String getHash() {
+        return hash;
+    }
+
+    public void setHash(String hash) {
+        this.hash = hash;
+    }
+
+    public String getClassPath() {
+        return classPath;
+    }
+
+    public void setClassPath(String classPath) {
+        this.classPath = classPath;
+    }
+
+    public String getClassName() {
+        return className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
+    public String getUploader() {
+        return uploader;
+    }
+
+    public void setUploader(String uploader) {
+        this.uploader = uploader;
+    }
+
+    public String getUploadIp() {
+        return uploadIp;
+    }
+
+    public void setUploadIp(String uploadIp) {
+        this.uploadIp = uploadIp;
+    }
+
+    public Long getUploadTime() {
+        return uploadTime;
+    }
+
+    public void setUploadTime(Long uploadTime) {
+        this.uploadTime = uploadTime;
+    }
+
+    public Long getDeployTime() {
+        return deployTime;
+    }
+
+    public void setDeployTime(Long deployTime) {
+        this.deployTime = deployTime;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -52,5 +108,18 @@ public class HotDeploymentClass {
     @Override
     public int hashCode() {
         return Objects.hash(hash, classPath, className, uploader, uploadIp, uploadTime, deployTime);
+    }
+
+    @Override
+    public String toString() {
+        return "HotDeploymentClass{" +
+                "hash='" + hash + '\'' +
+                ", classPath='" + classPath + '\'' +
+                ", className='" + className + '\'' +
+                ", uploader='" + uploader + '\'' +
+                ", uploadIp='" + uploadIp + '\'' +
+                ", uploadTime=" + uploadTime +
+                ", deployTime=" + deployTime +
+                '}';
     }
 }

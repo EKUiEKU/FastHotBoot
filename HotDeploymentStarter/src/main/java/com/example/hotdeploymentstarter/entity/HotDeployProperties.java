@@ -25,7 +25,7 @@ public class HotDeployProperties {
     /**
      * 加密的盐
      */
-    private String ascSalt = HexUtil.encodeHexStr("hotDeploy");
+    private String salt = HexUtil.encodeHexStr("hotDeploy");
 
     public Boolean getEnable() {
         return enable;
@@ -51,11 +51,11 @@ public class HotDeployProperties {
         this.classFilePath = classFilePath;
     }
 
-    public String getAscSalt() {
-        return ascSalt;
+    public String getSalt() {
+        return salt;
     }
 
-    public void setAscSalt(String ascSalt) {
-        this.ascSalt = ascSalt;
+    public void setSalt(String ascSalt) {
+        this.salt = ascSalt;
     }
 }
