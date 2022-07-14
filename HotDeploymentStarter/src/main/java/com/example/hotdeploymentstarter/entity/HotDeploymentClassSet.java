@@ -21,7 +21,6 @@ import java.util.List;
  * @DATE: 2022/7/14
  * @DESCRIBE: 用来存放热更新的Class文件的信息
  **/
-@Component
 public class HotDeploymentClassSet extends HashSet<HotDeploymentClass> {
     private Logger log = LoggerFactory.getLogger(HotDeploymentClassSet.class);
     @Autowired
@@ -37,12 +36,12 @@ public class HotDeploymentClassSet extends HashSet<HotDeploymentClass> {
 
     private String getSelfJsonFilePath() {
         String selfJsonEncodeFileName = md5(Constant.CLASSES_INFO);
-        return hotDeployProperties.getClassFilePath() + File.separatorChar + selfJsonEncodeFileName;
+        return hotDeployProperties.getClassFilePath() + File.separatorChar + Constant.ROOT_NAME + File.separatorChar + selfJsonEncodeFileName;
     }
 
     private String getJsonMD5FilePath() {
         String selfJsonMD5EncodeFileName = md5(Constant.MD5_VERIFICATION);
-        return hotDeployProperties.getClassFilePath() + File.separatorChar + selfJsonMD5EncodeFileName;
+        return hotDeployProperties.getClassFilePath() + File.separatorChar + Constant.ROOT_NAME + File.separatorChar + selfJsonMD5EncodeFileName;
     }
 
     @Override
@@ -89,7 +88,7 @@ public class HotDeploymentClassSet extends HashSet<HotDeploymentClass> {
      * 保存所有类的信息
      */
     public void saveClassSetInfo() {
-        String selfJson = JSON.toJSONString(this.toArray());
+        String selfJson = aseEncode(JSON.toJSONString(this.toArray()));
         String selfJsonMd5 = md5(selfJson);
 
         String selfJsonFilePath = getSelfJsonFilePath();
@@ -127,28 +126,47 @@ public class HotDeploymentClassSet extends HashSet<HotDeploymentClass> {
         String selfJsonFilePath = getSelfJsonFilePath();
         String md5FilePath = getJsonMD5FilePath();
 
+        if (!FileUtil.exist(selfJsonFilePath) || !FileUtil.exist(md5FilePath)) {
+            return;
+        }
+
+        log.info("loading data from disk!");
+
         String selfJson = FileUtil.readString(selfJsonFilePath, StandardCharsets.UTF_8);
         String selfJsonMd5 = FileUtil.readString(md5FilePath, StandardCharsets.UTF_8);
 
         // 验签
         String md5Verification = md5(selfJson);
-        if (md5Verification.equals(selfJsonMd5)) {
+        if (!md5Verification.equals(selfJsonMd5)) {
             log.error("{} is be modified", getJsonMD5FilePath());
             throw new UnsupportedOperationException("read local classes set info failure.File is be modified");
         }
 
+        // 解密
+        String selfJsonDecode = aseDecode(selfJson);
+
         // 添加到容器里面
-        List<HotDeploymentClass> localClassInfo = JSON.parseArray(selfJson, HotDeploymentClass.class);
+        List<HotDeploymentClass> localClassInfo = JSON.parseArray(selfJsonDecode, HotDeploymentClass.class);
         for (HotDeploymentClass deploymentClass : localClassInfo) {
             this.add(deploymentClass);
         }
 
         if (localClassInfo.size() != 0) {
-            log.info("loading {} class info from disk.", localClassInfo.size());
+            log.info("load{} class info from disk successfully.", localClassInfo.size());
         }
     }
 
     private String md5(String source) {
         return SecureUtil.md5(hotDeployProperties.getSalt() + source + hotDeployProperties.getSalt());
+    }
+
+    private String aseEncode(String source) {
+        return SecureUtil.aes(hotDeployProperties.getSalt().getBytes())
+                .encryptBase64(source, StandardCharsets.UTF_8);
+    }
+
+    private String aseDecode(String source) {
+        return SecureUtil.aes(hotDeployProperties.getSalt().getBytes())
+                .decryptStr(source);
     }
 }

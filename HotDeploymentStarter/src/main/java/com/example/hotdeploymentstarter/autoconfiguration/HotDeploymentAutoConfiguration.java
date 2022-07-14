@@ -1,6 +1,7 @@
 package com.example.hotdeploymentstarter.autoconfiguration;
 
 import com.example.hotdeploymentstarter.entity.HotDeployProperties;
+import com.example.hotdeploymentstarter.entity.HotDeploymentClassSet;
 import com.sun.net.httpserver.HttpServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,5 +31,11 @@ public class HotDeploymentAutoConfiguration {
         //TODO 监听事件
 
         return httpServer;
+    }
+
+    @Bean
+    @ConditionalOnClass(HttpServer.class)
+    public HotDeploymentClassSet hotDeploymentClasses() {
+        return new HotDeploymentClassSet();
     }
 }
