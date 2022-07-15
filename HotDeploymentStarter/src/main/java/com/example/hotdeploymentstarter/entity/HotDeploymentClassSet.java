@@ -3,6 +3,7 @@ package com.example.hotdeploymentstarter.entity;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.alibaba.fastjson.JSON;
+import com.example.hotdeploymentstarter.utils.DeployUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +24,9 @@ import java.util.List;
  **/
 public class HotDeploymentClassSet extends HashSet<HotDeploymentClass> {
     private Logger log = LoggerFactory.getLogger(HotDeploymentClassSet.class);
+
     @Autowired
-    HotDeployProperties hotDeployProperties;
+    DeployUtils deployUtils;
 
     /**
      * 在初始化对象的时候把数据读到内存中
@@ -32,16 +34,6 @@ public class HotDeploymentClassSet extends HashSet<HotDeploymentClass> {
     @PostConstruct
     public void init() {
         readClassSetInfoFromFile();
-    }
-
-    private String getSelfJsonFilePath() {
-        String selfJsonEncodeFileName = md5(Constant.CLASSES_INFO);
-        return hotDeployProperties.getClassFilePath() + File.separatorChar + Constant.ROOT_NAME + File.separatorChar + selfJsonEncodeFileName;
-    }
-
-    private String getJsonMD5FilePath() {
-        String selfJsonMD5EncodeFileName = md5(Constant.MD5_VERIFICATION);
-        return hotDeployProperties.getClassFilePath() + File.separatorChar + Constant.ROOT_NAME + File.separatorChar + selfJsonMD5EncodeFileName;
     }
 
     @Override
@@ -88,11 +80,11 @@ public class HotDeploymentClassSet extends HashSet<HotDeploymentClass> {
      * 保存所有类的信息
      */
     public void saveClassSetInfo() {
-        String selfJson = aseEncode(JSON.toJSONString(this.toArray()));
-        String selfJsonMd5 = md5(selfJson);
+        String selfJson = deployUtils.aseEncode(JSON.toJSONString(this.toArray()));
+        String selfJsonMd5 = deployUtils.md5(selfJson);
 
-        String selfJsonFilePath = getSelfJsonFilePath();
-        String md5FilePath = getJsonMD5FilePath();
+        String selfJsonFilePath = deployUtils.getHotDeploymentClassSetFilePath();
+        String md5FilePath = deployUtils.getHotDeploymentClassSetMD5FilePath();
 
         try {
             if (FileUtil.exist(selfJsonFilePath)) {
@@ -122,9 +114,9 @@ public class HotDeploymentClassSet extends HashSet<HotDeploymentClass> {
     /**
      * 读取本地的数据
      */
-    public void readClassSetInfoFromFile() {
-        String selfJsonFilePath = getSelfJsonFilePath();
-        String md5FilePath = getJsonMD5FilePath();
+    public void     readClassSetInfoFromFile() {
+        String selfJsonFilePath = deployUtils.getHotDeploymentClassSetFilePath();
+        String md5FilePath = deployUtils.getHotDeploymentClassSetMD5FilePath();
 
         if (!FileUtil.exist(selfJsonFilePath) || !FileUtil.exist(md5FilePath)) {
             return;
@@ -136,14 +128,14 @@ public class HotDeploymentClassSet extends HashSet<HotDeploymentClass> {
         String selfJsonMd5 = FileUtil.readString(md5FilePath, StandardCharsets.UTF_8);
 
         // 验签
-        String md5Verification = md5(selfJson);
+        String md5Verification = deployUtils.md5(selfJson);
         if (!md5Verification.equals(selfJsonMd5)) {
-            log.error("{} is be modified", getJsonMD5FilePath());
+            log.error("{} is be modified", deployUtils.getHotDeploymentClassSetFilePath());
             throw new UnsupportedOperationException("read local classes set info failure.File is be modified");
         }
 
         // 解密
-        String selfJsonDecode = aseDecode(selfJson);
+        String selfJsonDecode = deployUtils.aseDecode(selfJson);
 
         // 添加到容器里面
         List<HotDeploymentClass> localClassInfo = JSON.parseArray(selfJsonDecode, HotDeploymentClass.class);
@@ -152,21 +144,7 @@ public class HotDeploymentClassSet extends HashSet<HotDeploymentClass> {
         }
 
         if (localClassInfo.size() != 0) {
-            log.info("load{} class info from disk successfully.", localClassInfo.size());
+            log.info("load {} class info from disk successfully.", localClassInfo.size());
         }
-    }
-
-    private String md5(String source) {
-        return SecureUtil.md5(hotDeployProperties.getSalt() + source + hotDeployProperties.getSalt());
-    }
-
-    private String aseEncode(String source) {
-        return SecureUtil.aes(hotDeployProperties.getSalt().getBytes())
-                .encryptBase64(source, StandardCharsets.UTF_8);
-    }
-
-    private String aseDecode(String source) {
-        return SecureUtil.aes(hotDeployProperties.getSalt().getBytes())
-                .decryptStr(source);
     }
 }

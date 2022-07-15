@@ -2,6 +2,8 @@ package com.example.hotdeploymentstarter.autoconfiguration;
 
 import com.example.hotdeploymentstarter.entity.HotDeployProperties;
 import com.example.hotdeploymentstarter.entity.HotDeploymentClassSet;
+import com.example.hotdeploymentstarter.handler.ReceiveClassHandler;
+import com.example.hotdeploymentstarter.utils.DeployUtils;
 import com.sun.net.httpserver.HttpServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,14 +26,24 @@ public class HotDeploymentAutoConfiguration {
 
     @Bean
     @ConditionalOnClass(HttpServer.class)
-    public HttpServer httpServer(HotDeployProperties properties) throws IOException {
+    public DeployUtils deployUtils(HotDeployProperties properties) throws IOException {
+        return new DeployUtils(properties);
+    }
+
+    @Bean
+    @ConditionalOnClass(HttpServer.class)
+    public HttpServer httpServer(HotDeployProperties properties, DeployUtils deployUtils, HotDeploymentClassSet deploymentClassSet) throws IOException {
         HttpServer httpServer = HttpServer.create(new InetSocketAddress(properties.getPort()), 0);
         httpServer.start();
         log.info("Hot department is listen port on {}.", properties.getPort());
-        //TODO 监听事件
+
+        //监听事件
+        httpServer.createContext("/deploy", new ReceiveClassHandler(deployUtils, deploymentClassSet));
 
         return httpServer;
     }
+
+
 
     @Bean
     @ConditionalOnClass(HttpServer.class)

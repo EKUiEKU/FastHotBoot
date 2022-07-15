@@ -28,7 +28,6 @@ public class HotDeploymentClassSetTest {
         class1.setUploadTime(System.currentTimeMillis());
         class1.setHash("adadasfrefer");
         class1.setUploadIp("127.0.0.1");
-        class1.setDeployTime(System.currentTimeMillis());
 
         hotDeploymentClasses.add(class1);
     }

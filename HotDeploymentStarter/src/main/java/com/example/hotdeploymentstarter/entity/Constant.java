@@ -18,4 +18,8 @@ public class Constant {
      * 根目录名称
      */
     public static final String ROOT_NAME = "deploy";
+    /**
+     * 热更新的class文件目录名称
+     */
+    public static final String CLASSES_DIR = "classes";
 }

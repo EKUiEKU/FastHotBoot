@@ -17,6 +17,10 @@ public class HotDeploymentClass {
      */
     private String classPath;
     /**
+     * 类所在的包地址
+     */
+    private String fullPackageName;
+    /**
      * 文件类名称
      */
     private String className;
@@ -32,10 +36,6 @@ public class HotDeploymentClass {
      * 文件上传到服务器的时间
      */
     private Long uploadTime;
-    /**
-     * 文件部署到程序的时间
-     */
-    private Long deployTime;
 
     public String getHash() {
         return hash;
@@ -85,12 +85,12 @@ public class HotDeploymentClass {
         this.uploadTime = uploadTime;
     }
 
-    public Long getDeployTime() {
-        return deployTime;
+    public String getFullPackageName() {
+        return fullPackageName;
     }
 
-    public void setDeployTime(Long deployTime) {
-        this.deployTime = deployTime;
+    public void setFullPackageName(String fullPackageName) {
+        this.fullPackageName = fullPackageName;
     }
 
     @Override
@@ -102,12 +102,12 @@ public class HotDeploymentClass {
             return false;
         }
         HotDeploymentClass that = (HotDeploymentClass) o;
-        return hash.equals(that.hash) && classPath.equals(that.classPath) && className.equals(that.className) && uploader.equals(that.uploader) && uploadIp.equals(that.uploadIp) && uploadTime.equals(that.uploadTime) && deployTime.equals(that.deployTime);
+        return getHash().equals(that.getHash()) && getClassPath().equals(that.getClassPath()) && getFullPackageName().equals(that.getFullPackageName()) && getClassName().equals(that.getClassName()) && getUploader().equals(that.getUploader()) && getUploadIp().equals(that.getUploadIp()) && getUploadTime().equals(that.getUploadTime());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(hash, classPath, className, uploader, uploadIp, uploadTime, deployTime);
+        return Objects.hash(getHash(), getClassPath(), getFullPackageName(), getClassName(), getUploader(), getUploadIp(), getUploadTime());
     }
 
     @Override
@@ -115,11 +115,11 @@ public class HotDeploymentClass {
         return "HotDeploymentClass{" +
                 "hash='" + hash + '\'' +
                 ", classPath='" + classPath + '\'' +
+                ", fullPackageName='" + fullPackageName + '\'' +
                 ", className='" + className + '\'' +
                 ", uploader='" + uploader + '\'' +
                 ", uploadIp='" + uploadIp + '\'' +
                 ", uploadTime=" + uploadTime +
-                ", deployTime=" + deployTime +
                 '}';
     }
 }
