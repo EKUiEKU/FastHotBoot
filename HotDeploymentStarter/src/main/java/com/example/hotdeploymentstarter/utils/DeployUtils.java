@@ -18,13 +18,16 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Service;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
@@ -185,8 +188,6 @@ public class DeployUtils {
      * @param deploymentClass
      */
     public Boolean hotDeployment(List<HotDeploymentClass> deploymentClass) {
-        DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) ctx.getBeanFactory();
-
         HotDeploymentClassLoader loader = new HotDeploymentClassLoader(getDeployClassPath());
         List<Class> leastClazzList = new ArrayList<>();
 
@@ -204,26 +205,15 @@ public class DeployUtils {
         // 热部署
         for (Class clazz : leastClazzList) {
             try {
-                String objName = convert2camelStyle(clazz.getSimpleName());
-                boolean isContain = beanFactory.containsBeanDefinition(objName);
-                if (isContain) {
-                    beanFactory.removeBeanDefinition(objName);
-                }
+                /**
+                 * 非IOC类需要用ASM改变class文件字节码来实现热部署
+                 */
+                registerNotIOCIfNecessary(clazz);
 
-                BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(clazz);
-                AbstractBeanDefinition rawBeanDefinition = beanDefinitionBuilder.getRawBeanDefinition();
-
-                // 默认单例模式
-                Annotation scope = clazz.getAnnotation(Scope.class);
-                if (scope != null) {
-                    rawBeanDefinition.setScope(scope.toString());
-                }else {
-                    rawBeanDefinition.setScope("singleton");
-                }
-
-
-                beanFactory.registerBeanDefinition(objName, rawBeanDefinition);
-
+                /**
+                 * IOC类仅需将我们最新的class对象放入IOC容器即可
+                 */
+                registerIOCIfNecessary(clazz);
                 registerBeanIfNecessary(clazz);
             } catch (Throwable e) {
                 log.error(e.getMessage(), e);
@@ -233,6 +223,15 @@ public class DeployUtils {
 
 
         return true;
+    }
+
+    /**
+     * 通过ASM技术将所有字节码中拥有本来的new关键字全部通过反射实例化最新的对象
+     * @param clazz
+     */
+    private boolean registerNotIOCIfNecessary(Class clazz) {
+        //TODO ASM
+        return false;
     }
 
     /**
@@ -333,5 +332,41 @@ public class DeployUtils {
         }
 
         return true;
+    }
+
+    /**
+     * 如果Class上面有注入的注解,则将其注入到IOC容器中
+     * @param clazz
+     * @return
+     */
+    public boolean registerIOCIfNecessary(Class clazz) {
+        if (!ObjectUtils.isEmpty(clazz.getAnnotation(Component.class))
+                || !ObjectUtils.isEmpty(clazz.getAnnotation(Service.class))
+                || !ObjectUtils.isEmpty(clazz.getAnnotation(Controller.class))
+                || !ObjectUtils.isEmpty(clazz.getAnnotation(RestController.class))
+                || !ObjectUtils.isEmpty(clazz.getAnnotation(Configuration.class))) {
+
+            DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) ctx.getBeanFactory();
+            String objName = convert2camelStyle(clazz.getSimpleName());
+
+            boolean isContain = beanFactory.containsBeanDefinition(objName);
+            if (isContain) {
+                beanFactory.removeBeanDefinition(objName);
+            }
+
+            BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(clazz);
+            AbstractBeanDefinition rawBeanDefinition = beanDefinitionBuilder.getRawBeanDefinition();
+
+            // 默认单例模式
+            Annotation scope = clazz.getAnnotation(Scope.class);
+            if (scope != null) {
+                rawBeanDefinition.setScope(scope.toString());
+            }else {
+                rawBeanDefinition.setScope("singleton");
+            }
+
+            beanFactory.registerBeanDefinition(objName, rawBeanDefinition);
+        }
+        return false;
     }
 }

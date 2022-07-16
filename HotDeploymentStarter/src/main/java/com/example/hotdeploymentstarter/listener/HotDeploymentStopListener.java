@@ -23,8 +23,8 @@ public class HotDeploymentStopListener implements ApplicationListener<ContextClo
         ApplicationContext ctx = event.getApplicationContext();
         HttpServer httpServer = ctx.getBean(HttpServer.class);
         if (httpServer != null) {
-            // waiting http close 2 sec.
-            httpServer.stop(2);
+            // waiting http close 1 sec.
+            httpServer.stop(1);
         }
     }
 }
