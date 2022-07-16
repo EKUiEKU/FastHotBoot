@@ -1,5 +1,6 @@
 package com.example.hotdeploymentstarter.entity;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.alibaba.fastjson.JSON;
@@ -12,10 +13,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author: WSC
@@ -31,10 +30,10 @@ public class HotDeploymentClassSet extends HashSet<HotDeploymentClass> {
     /**
      * 在初始化对象的时候把数据读到内存中
      */
-    @PostConstruct
-    public void init() {
-        readClassSetInfoFromFile();
-    }
+    // @PostConstruct
+    // public void init() {
+    //     readClassSetInfoFromFile();
+    // }
 
     @Override
     public boolean add(HotDeploymentClass hotDeploymentClass) {
@@ -114,13 +113,15 @@ public class HotDeploymentClassSet extends HashSet<HotDeploymentClass> {
     /**
      * 读取本地的数据
      */
-    public void     readClassSetInfoFromFile() {
+    public void readClassSetInfoFromFile() {
         String selfJsonFilePath = deployUtils.getHotDeploymentClassSetFilePath();
         String md5FilePath = deployUtils.getHotDeploymentClassSetMD5FilePath();
 
         if (!FileUtil.exist(selfJsonFilePath) || !FileUtil.exist(md5FilePath)) {
             return;
         }
+
+        this.clear();
 
         log.info("loading data from disk!");
 
@@ -141,10 +142,16 @@ public class HotDeploymentClassSet extends HashSet<HotDeploymentClass> {
         List<HotDeploymentClass> localClassInfo = JSON.parseArray(selfJsonDecode, HotDeploymentClass.class);
         for (HotDeploymentClass deploymentClass : localClassInfo) {
             this.add(deploymentClass);
+            Date uploadDate = new Date(deploymentClass.getUploadTime());
+            log.info("load <{}> info from disk,upload time is {}", deploymentClass.getClassPath()
+                    , DateUtil.format(uploadDate, "yyyy-MM-dd HH:mm:ss"));
         }
 
         if (localClassInfo.size() != 0) {
             log.info("load {} class info from disk successfully.", localClassInfo.size());
         }
+
+        // 重新热部署一下
+        deployUtils.hotDeployment(this.stream().collect(Collectors.toList()));
     }
 }

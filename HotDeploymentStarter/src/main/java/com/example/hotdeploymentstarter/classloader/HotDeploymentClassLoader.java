@@ -1,6 +1,10 @@
 package com.example.hotdeploymentstarter.classloader;
 
+import cn.hutool.core.io.FileUtil;
+import com.example.hotdeploymentstarter.utils.DeployUtils;
+
 import java.io.*;
+import java.util.Objects;
 
 /**
  * @author: WSC
@@ -35,7 +39,12 @@ public class HotDeploymentClassLoader extends ClassLoader{
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         try {
             byte[] b = loadClassFromFile(name);
-            return defineClass(name, b, 0, b.length);
+            if (!Objects.isNull(b)) {
+                return defineClass(name, b, 0, b.length);
+            }
+
+            //从父加载器找
+            return getParent().loadClass(name);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -43,8 +52,12 @@ public class HotDeploymentClassLoader extends ClassLoader{
 
 
     private byte[] loadClassFromFile(String name) throws IOException {
-        String fileName = name.replace('.', File.separatorChar) + ".class";
+        String fileName = DeployUtils.convertPackageName2Path(name) + ".class";
         String filePath = this.basePath + fileName;
+
+        if (!FileUtil.exist(filePath)) {
+            return null;
+        }
 
         try (InputStream inputStream = new FileInputStream(filePath);
              ByteArrayOutputStream byteStream = new ByteArrayOutputStream()
@@ -59,6 +72,13 @@ public class HotDeploymentClassLoader extends ClassLoader{
 
     @Override
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-        return super.loadClass(name, resolve);
+        Class<?> c = this.findClass(name);
+
+        if (c == null) {
+            super.loadClass(name, resolve);
+        }else {
+            resolveClass(c);
+        }
+        return c;
     }
 }

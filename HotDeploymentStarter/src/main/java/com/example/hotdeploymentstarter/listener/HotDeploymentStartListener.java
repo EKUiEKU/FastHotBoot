@@ -16,14 +16,6 @@ public class HotDeploymentStartListener implements ApplicationListener<Applicati
 
     @Override
     public void onApplicationEvent(ApplicationStartedEvent applicationStartedEvent) {
-        log.info("Hot deployment is started!");
-
-        // 启动成功之后将重新将本地的文件载入HotDeploymentClassSet容器中
-        ConfigurableApplicationContext ctx = applicationStartedEvent.getApplicationContext();
-        HotDeploymentClassSet hotDeploymentClassSet = ctx.getBean(HotDeploymentClassSet.class);
-
-        if (hotDeploymentClassSet != null) {
-            hotDeploymentClassSet.readClassSetInfoFromFile();
-        }
+        log.info("Hot deployment is ready!");
     }
 }

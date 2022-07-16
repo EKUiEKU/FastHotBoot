@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -26,8 +27,8 @@ public class HotDeploymentAutoConfiguration {
 
     @Bean
     @ConditionalOnClass(HttpServer.class)
-    public DeployUtils deployUtils(HotDeployProperties properties) throws IOException {
-        return new DeployUtils(properties);
+    public DeployUtils deployUtils(HotDeployProperties properties, ConfigurableApplicationContext ctx) throws IOException {
+        return new DeployUtils(properties, ctx);
     }
 
     @Bean

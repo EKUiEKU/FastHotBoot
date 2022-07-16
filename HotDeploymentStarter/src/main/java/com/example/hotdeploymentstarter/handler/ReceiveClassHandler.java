@@ -85,7 +85,8 @@ public class ReceiveClassHandler implements HttpHandler {
 
                 // 将数据保存到本地
                 String classPath = deployUtils.getDeployClassPath();
-                String filePath = classPath + File.separatorChar + fileName;
+                String fullPackage = packageMap.get(fileName) + "";
+                String filePath = classPath + File.separatorChar + DeployUtils.convertPackageName2Path(fullPackage) + ".class";
                 UploadFile file = formData.getFile(fileName);
                 FileUtil.writeBytes(file.getFileContent(), filePath);
 
@@ -102,7 +103,7 @@ public class ReceiveClassHandler implements HttpHandler {
                 deployClassInfo.setClassName(fileName);
                 deployClassInfo.setUploadIp(remoteIp.getHostAddress());
                 deployClassInfo.setUploadTime(System.currentTimeMillis());
-                deployClassInfo.setFullPackageName(packageMap.get(fileName) + "");
+                deployClassInfo.setFullPackageName(fullPackage);
                 //TODO 权限访问,最后再写
                 deployClassInfo.setUploader("admin");
 
@@ -111,11 +112,15 @@ public class ReceiveClassHandler implements HttpHandler {
 
 
             for (HotDeploymentClass deploymentClass : tmpDeploymentClass) {
-                log.info("receive <{}> file from remote host <%>.", deploymentClass.getClassName(), remoteIp.getHostAddress());
+                log.info("receive <{}> file from remote host <{}>.", deploymentClass.getClassName(), remoteIp.getHostAddress());
             }
             deploymentClassSet.addAll(tmpDeploymentClass);
-
-            sendResponseMessage(exchange, HttpStatus.HTTP_OK, "success");
+            // 热部署
+            if (deployUtils.hotDeployment(tmpDeploymentClass)) {
+                sendResponseMessage(exchange, HttpStatus.HTTP_OK, "success");
+            }else {
+                sendResponseMessage(exchange, HttpStatus.HTTP_INTERNAL_ERROR, "fail to find class.");
+            }
         }else {
             sendResponseMessage(exchange, HttpStatus.HTTP_UNSUPPORTED_TYPE, "unsupported this request type!");
             return;

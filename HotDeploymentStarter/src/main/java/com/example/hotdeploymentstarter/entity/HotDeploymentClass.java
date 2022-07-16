@@ -102,12 +102,12 @@ public class HotDeploymentClass {
             return false;
         }
         HotDeploymentClass that = (HotDeploymentClass) o;
-        return getHash().equals(that.getHash()) && getClassPath().equals(that.getClassPath()) && getFullPackageName().equals(that.getFullPackageName()) && getClassName().equals(that.getClassName()) && getUploader().equals(that.getUploader()) && getUploadIp().equals(that.getUploadIp()) && getUploadTime().equals(that.getUploadTime());
+        return getClassPath().equals(that.getClassPath()) && getFullPackageName().equals(that.getFullPackageName()) && getClassName().equals(that.getClassName());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getHash(), getClassPath(), getFullPackageName(), getClassName(), getUploader(), getUploadIp(), getUploadTime());
+        return Objects.hash(getClassPath(), getFullPackageName(), getClassName());
     }
 
     @Override
