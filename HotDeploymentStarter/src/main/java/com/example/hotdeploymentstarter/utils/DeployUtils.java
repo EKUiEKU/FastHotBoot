@@ -193,7 +193,7 @@ public class DeployUtils {
 
         for (HotDeploymentClass clazzInfo : deploymentClass) {
             try {
-                Class<?> leastClazz = Class.forName(clazzInfo.getFullPackageName(), false, loader);
+                Class<?> leastClazz = Class.forName(clazzInfo.getFullPackageName(), true, loader);
                 leastClazzList.add(leastClazz);
             } catch (Throwable e) {
                 log.error(e.getMessage(), e);
@@ -206,15 +206,15 @@ public class DeployUtils {
         for (Class clazz : leastClazzList) {
             try {
                 /**
-                 * 非IOC类需要用ASM改变class文件字节码来实现热部署
+                 * 用ASM改变class文件字节码来实现热部署
                  */
-                registerNotIOCIfNecessary(clazz);
+                registerObject(clazz);
 
                 /**
                  * IOC类仅需将我们最新的class对象放入IOC容器即可
                  */
                 registerIOCIfNecessary(clazz);
-                registerBeanIfNecessary(clazz);
+                registerControllerIfNecessary(clazz);
             } catch (Throwable e) {
                 log.error(e.getMessage(), e);
                 return false;
@@ -229,7 +229,7 @@ public class DeployUtils {
      * 通过ASM技术将所有字节码中拥有本来的new关键字全部通过反射实例化最新的对象
      * @param clazz
      */
-    private boolean registerNotIOCIfNecessary(Class clazz) {
+    private boolean registerObject(Class clazz) {
         //TODO ASM
         return false;
     }
@@ -258,7 +258,7 @@ public class DeployUtils {
      * @param clazz
      * @return
      */
-    private boolean registerBeanIfNecessary(Class clazz) {
+    private boolean registerControllerIfNecessary(Class clazz) {
         String clazzName = convert2camelStyle(clazz.getSimpleName());
         if (!ObjectUtils.isEmpty(clazz.getAnnotation(RestController.class))
                 || !ObjectUtils.isEmpty(Controller.class)) {

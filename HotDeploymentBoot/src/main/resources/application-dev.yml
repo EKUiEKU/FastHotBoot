@@ -1,0 +1,6 @@
+boot:
+  deploy:
+    port: 9821
+    class-file-path: c:\\DevEnv
+    salt: dd12869b67583db1
+    enable: true

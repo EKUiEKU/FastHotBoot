@@ -18,12 +18,15 @@ public class HotDeploymentClassLoader extends ClassLoader{
 
     private final String basePath;
 
+    private ClassLoader parentClassLoader;
+
     public HotDeploymentClassLoader(String basePath) {
         if (!basePath.isEmpty()
                 && basePath.charAt(basePath.length() - 1) != File.separatorChar) {
             basePath += File.separatorChar;
         }
         this.basePath = basePath;
+        parentClassLoader = this.getClass().getClassLoader();
     }
 
     public HotDeploymentClassLoader(String basePath, ClassLoader classLoader) {
@@ -33,6 +36,7 @@ public class HotDeploymentClassLoader extends ClassLoader{
             basePath += File.separatorChar;
         }
         this.basePath = basePath;
+        parentClassLoader = this.getClass().getClassLoader();
     }
 
     @Override
@@ -44,7 +48,7 @@ public class HotDeploymentClassLoader extends ClassLoader{
             }
 
             //从父加载器找
-            return getParent().loadClass(name);
+            return parentClassLoader.loadClass(name);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
