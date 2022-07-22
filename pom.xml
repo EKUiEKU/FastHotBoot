@@ -12,6 +12,8 @@
         <module>Sample</module>
         <module>HotDeploymentApp</module>
         <module>Common</module>
+        <module>HotDeploymentAgent</module>
+        <module>HotDeploymentInjector</module>
     </modules>
 
     <properties>

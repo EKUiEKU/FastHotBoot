@@ -16,9 +16,13 @@ public class HotDeploymentClassLoader extends ClassLoader{
         registerAsParallelCapable();
     }
 
-    private final String basePath;
+    private String basePath;
 
     private ClassLoader parentClassLoader;
+
+    public HotDeploymentClassLoader() {
+
+    }
 
     public HotDeploymentClassLoader(String basePath) {
         if (!basePath.isEmpty()
@@ -42,6 +46,8 @@ public class HotDeploymentClassLoader extends ClassLoader{
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         try {
+            System.out.println("find class:" + name);
+
             byte[] b = loadClassFromFile(name);
             if (!Objects.isNull(b)) {
                 return defineClass(name, b, 0, b.length);
