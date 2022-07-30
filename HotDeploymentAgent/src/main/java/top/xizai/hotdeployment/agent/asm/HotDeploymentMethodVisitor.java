@@ -28,7 +28,7 @@ public class HotDeploymentMethodVisitor extends MethodVisitor {
     }
 
 
-    // // TODO 这段代码有误
+    // TODO 这段代码有误
     // @Override
     // public void visitTypeInsn(int opcode, String type) {
     //     System.out.println("visitTypeInsn:" + opcode + " = " + type);
@@ -37,26 +37,20 @@ public class HotDeploymentMethodVisitor extends MethodVisitor {
     //
     //         System.out.println("start INVOKE.... " + className);
     //         //
-    //         // mv.visitMethodInsn(Opcodes.INVOKESTATIC, classloaderName,
-    //         //         "getInstance", "()L" + classloaderName + ";");
-    //         // mv.visitLdcInsn(type.replace("/", "."));
-    //         // mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, classloaderName,
-    //         //         "findClass", "(Ljava/lang/String;)Ljava/lang/Class;");
-    //         // mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Class",
-    //         //         "newInstance", "()Ljava/lang/Object;");
-    //         // mv.visitTypeInsn(Opcodes.CHECKCAST, className);
-    //         mv.visitCode();
-    //         mv.visitFieldInsn(GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
-    //         mv.visitLdcInsn("执行方法后。。。");
-    //         mv.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V", false);
-    //
-    //         mv.visitEnd();
+    //         mv.visitMethodInsn(Opcodes.INVOKESTATIC, classloaderName,
+    //                 "getInstance", "()L" + classloaderName + ";");
+    //         mv.visitLdcInsn(type.replace("/", "."));
+    //         mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, classloaderName,
+    //                 "findClass", "(Ljava/lang/String;)Ljava/lang/Class;");
+    //         mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Class",
+    //                 "newInstance", "()Ljava/lang/Object;");
+    //         mv.visitTypeInsn(Opcodes.CHECKCAST, className);
     //     }
     //
     //     super.visitTypeInsn(opcode, type);
     // }
 
-    //
+
     // @Override
     // public void visitCode() {
     //     mv.visitCode();
@@ -65,7 +59,8 @@ public class HotDeploymentMethodVisitor extends MethodVisitor {
     //     mv.visitLdcInsn("前置处理代码");
     //     mv.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V", false);
     // }
-    //
+
+
     // @Override
     // public void visitMaxs(int maxStack, int maxLocals) {
     //     super.visitMaxs(maxStack + 4, maxLocals);
@@ -76,7 +71,7 @@ public class HotDeploymentMethodVisitor extends MethodVisitor {
         mv.visitCode();
         mv.visitFieldInsn(GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
         //打印内容
-        mv.visitLdcInsn("打印内容。。。。。。。。。。。。。");
+        mv.visitLdcInsn("打印。。。。。。。。。。。");
         mv.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V", false);
     }
 

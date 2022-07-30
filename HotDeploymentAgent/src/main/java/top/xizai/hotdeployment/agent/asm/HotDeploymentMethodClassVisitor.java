@@ -29,15 +29,15 @@ public class HotDeploymentMethodClassVisitor extends ClassVisitor {
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc,
                                      String signature, String[] exceptions) {
-        MethodVisitor mv = super.visitMethod(Opcodes.ASM9, name, desc, signature,
+        MethodVisitor mv = super.visitMethod(Opcodes.ASM5, name, desc, signature,
                 exceptions);
 
         System.out.println("访问方法:" + name);
 
-        if (name.equals("main")) {
+        if (name.equals("say")) {
             return new HotDeploymentMethodVisitor(mv, className, classloaderName);
+        }else {
+            return mv;
         }
-
-        return mv;
     }
 }

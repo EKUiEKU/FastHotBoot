@@ -66,6 +66,7 @@
                             <Agent-Class>top.xizai.hotdeployment.agent.HotDeploymentAgent</Agent-Class>
                             <!--<Class-Path>tools.jar</Class-Path>-->
                             <Can-Retransform-Classes>true</Can-Retransform-Classes>
+                            <Can-Redefine-Classes>true</Can-Redefine-Classes>
                         </manifestEntries>
                     </archive>
                     <descriptorRefs>

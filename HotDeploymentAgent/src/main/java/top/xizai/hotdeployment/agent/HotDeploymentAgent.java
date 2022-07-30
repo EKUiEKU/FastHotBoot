@@ -19,13 +19,14 @@ import java.util.Random;
  * @DESCRIBE: 热部署代理
  **/
 public class HotDeploymentAgent {
+
     public static void agentmain(String agentArgs, Instrumentation inst) throws UnmodifiableClassException, ClassNotFoundException {
         System.out.println("method agentmain invoked");
         //默认 [className-methodName-printContent] 格式
         String[] args = agentArgs.split("-");
         inst.addTransformer(new HotDeploymentClassFileTransformer(args[0], args[1]), true);
         //触发transform执行
-        inst.retransformClasses(Class.forName("top.xizai.test.asm.HotAsmDeploymentTest"));
+        inst.retransformClasses(Class.forName(args[0]));
     }
 
     static class HotDeploymentClassFileTransformer implements ClassFileTransformer {
@@ -42,16 +43,19 @@ public class HotDeploymentAgent {
 
             System.out.println("className is " + clsName);
             //不处理目标类即可
-            if (clsName.trim().contains("HotAsmDeploymentTest")) {
-                System.out.println("werite " +"C:\\DevEnv\\" + className + ".class");
+            if (clsName.matches(".*" + className)) {
+                int randName = new Random().nextInt();
+                System.out.println("access in " + clsName);
 
                 ClassReader classReader = new ClassReader(classfileBuffer);
                 ClassWriter classWriter = new ClassWriter(classReader, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
                 ClassVisitor cv = new HotDeploymentMethodClassVisitor(classWriter, className, classLodeName);
                 classReader.accept(cv, 0);
 
-                FileUtil.writeBytes(classWriter.toByteArray(), "C:\\DevEnv\\" + new Random().nextInt() + ".class");
-                return classWriter.toByteArray();
+                byte[] bytes = classWriter.toByteArray();
+                FileUtil.writeBytes(bytes , "C:\\DevEnv\\" + randName + ".class");
+                System.out.println("werite " +"C:\\DevEnv\\" + randName + ".class");
+                return bytes;
             }
             return new byte[0];
         }

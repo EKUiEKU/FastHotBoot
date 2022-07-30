@@ -44,7 +44,7 @@ public class HotDeploymentClassLoader extends ClassLoader{
     }
 
     @Override
-    protected Class<?> findClass(String name) throws ClassNotFoundException {
+    public Class<?> findClass(String name) throws ClassNotFoundException {
         try {
             System.out.println("find class:" + name);
 
@@ -90,5 +90,10 @@ public class HotDeploymentClassLoader extends ClassLoader{
             resolveClass(c);
         }
         return c;
+    }
+
+    public static HotDeploymentClassLoader getInstance() {
+        HotDeploymentClassLoader loader = new HotDeploymentClassLoader("C:\\DevEnv");
+        return loader;
     }
 }
