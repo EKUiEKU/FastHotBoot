@@ -1,15 +1,14 @@
-package top.xizai.hotdeployment.agent;
+package top.xizai.agent;
 
-import cn.hutool.core.io.FileUtil;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
-import top.xizai.hotdeployment.agent.asm.HotDeploymentMethodClassVisitor;
+import top.xizai.agent.asm.HotDeploymentAsmUtil;
 
+import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.ProtectionDomain;
 import java.util.Random;
 
@@ -47,14 +46,22 @@ public class HotDeploymentAgent {
                 int randName = new Random().nextInt();
                 System.out.println("access in " + clsName);
 
-                ClassReader classReader = new ClassReader(classfileBuffer);
-                ClassWriter classWriter = new ClassWriter(classReader, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-                ClassVisitor cv = new HotDeploymentMethodClassVisitor(classWriter, className, classLodeName);
-                classReader.accept(cv, 0);
+                try {
+                    Files.write(Path.of("C:\\DevEnv\\" + randName + "origin.class"), classfileBuffer);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
 
-                byte[] bytes = classWriter.toByteArray();
-                FileUtil.writeBytes(bytes , "C:\\DevEnv\\" + randName + ".class");
+                byte[] bytes = HotDeploymentAsmUtil.changeMethodByClassBufferMethodVal(classfileBuffer, className, classLodeName);
+
                 System.out.println("werite " +"C:\\DevEnv\\" + randName + ".class");
+
+                try {
+                    Files.write(Path.of("C:\\DevEnv\\" + randName + ".class"), bytes);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
                 return bytes;
             }
             return new byte[0];

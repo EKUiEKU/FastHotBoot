@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Agent-Class: top.xizai.hotdeployment.agent.HotDeploymentAgent
+Agent-Class: top.xizai.agent.HotDeploymentAgent
 Can-Redefine-Classes: true
 Can-Retransform-Classes: true
 Permissions: all-permissions

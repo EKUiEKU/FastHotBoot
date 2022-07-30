@@ -7,6 +7,6 @@ package com.example.hotdeploymentstarter.test;
  **/
 public class SayService {
     public String say() {
-        return "我被干掉啦";
+        return "hello world";
     }
 }

@@ -1,6 +1,7 @@
-package top.xizai.hotdeployment.agent.asm;
+package top.xizai.agent.asm;
 
 import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -20,7 +21,7 @@ public class HotDeploymentMethodClassVisitor extends ClassVisitor {
     private String classloaderName;
 
     public HotDeploymentMethodClassVisitor(ClassVisitor cv, String className, String classloaderName) {
-        super(Opcodes.ASM5, cv);
+        super(Opcodes.ASM8, cv);
 
         this.className = className;
         this.classloaderName = classloaderName;
@@ -29,8 +30,8 @@ public class HotDeploymentMethodClassVisitor extends ClassVisitor {
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc,
                                      String signature, String[] exceptions) {
-        MethodVisitor mv = super.visitMethod(Opcodes.ASM5, name, desc, signature,
-                exceptions);
+
+        MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
 
         System.out.println("访问方法:" + name);
 
