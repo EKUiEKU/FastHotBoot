@@ -52,7 +52,7 @@ public class HotDeploymentAgent {
                     throw new RuntimeException(e);
                 }
 
-                byte[] bytes = HotDeploymentAsmUtil.changeMethodByClassBufferMethodVal(classfileBuffer, className, classLodeName);
+                byte[] bytes = HotDeploymentAsmUtil.changeMethodByClassBufferMethodVal(classfileBuffer, className);
 
                 System.out.println("werite " +"C:\\DevEnv\\" + randName + ".class");
 

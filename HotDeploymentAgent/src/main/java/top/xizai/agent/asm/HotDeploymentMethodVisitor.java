@@ -61,9 +61,6 @@ public class HotDeploymentMethodVisitor extends MethodVisitor {
             //         "findClass", "(Ljava/lang/String;)Ljava/lang/Class;");
             // mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Class",
             //         "newInstance", "()Ljava/lang/Object;");
-            // mv.visitTypeInsn(Opcodes.CHECKCAST, className);
-
-
             mv.visitMethodInsn(INVOKESTATIC, "com/example/hotdeploymentstarter/classloader/HotDeploymentClassLoader", "getInstance", "()Lcom/example/hotdeploymentstarter/classloader/HotDeploymentClassLoader;", false);
             mv.visitLdcInsn("com.example.hotdeploymentstarter.test.SayService");
             mv.visitMethodInsn(INVOKEVIRTUAL, "com/example/hotdeploymentstarter/classloader/HotDeploymentClassLoader", "findClass", "(Ljava/lang/String;)Ljava/lang/Class;", false);
@@ -92,11 +89,11 @@ public class HotDeploymentMethodVisitor extends MethodVisitor {
         super.visitTypeInsn(opcode, type);
     }
 
-
     @Override
     public void visitInsn(int opcode) {
         //此方法可以获取方法中每一条指令的操作类型，被访问多次
         //如应在方法结尾处添加新指令，则应判断：
+
         if (opcode == Opcodes.IRETURN) {
             mv.visitFieldInsn(GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
             mv.visitLdcInsn("执行方法后。。。");

@@ -28,6 +28,8 @@ public class HotAsmDeploymentTest{
         // Method say = clazz.getMethod("say");
         // say.invoke(newInstance);
 
+        injectMyself2HotDeploy();
+
         while (true) {
             Thread.sleep(10000);
             new SimpleService().say();

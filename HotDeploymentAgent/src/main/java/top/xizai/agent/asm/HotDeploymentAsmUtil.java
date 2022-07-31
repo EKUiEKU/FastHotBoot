@@ -10,10 +10,11 @@ import org.objectweb.asm.ClassWriter;
  * @DESCRIBE:
  **/
 public class HotDeploymentAsmUtil {
-    public static byte[] changeMethodByClassBufferMethodVal(byte[] classfileBuffer, String className, String classLodeName) {
+    public static byte[] changeMethodByClassBufferMethodVal(byte[] classfileBuffer, String className) {
         ClassReader classReader = new ClassReader(classfileBuffer);
         ClassWriter classWriter = new ClassWriter(classReader, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-        ClassVisitor cv = new HotDeploymentMethodClassVisitor(classWriter, className, classLodeName);
+        // ClassVisitor cv = new HotDeploymentMethodClassVisitor(classWriter, className, classLodeName);
+        ClassVisitor cv = new HotDeploymentProxy(classWriter, className);
         classReader.accept(cv, 0);
 
         byte[] bytes = classWriter.toByteArray();

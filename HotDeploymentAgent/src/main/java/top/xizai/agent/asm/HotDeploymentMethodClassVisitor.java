@@ -27,6 +27,13 @@ public class HotDeploymentMethodClassVisitor extends ClassVisitor {
         this.classloaderName = classloaderName;
     }
 
+    private String defineInterface = "com/example/hotdeploymentstarter/test/ISayService";
+
+    @Override
+    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+        super.visit(version, access, name, signature, superName, new String[]{defineInterface});
+    }
+
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc,
                                      String signature, String[] exceptions) {
