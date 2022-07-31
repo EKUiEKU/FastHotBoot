@@ -31,7 +31,7 @@ public class InjectorMain {
 
     public static void main(String[] args) throws IOException, AttachNotSupportedException, AgentLoadException, AgentInitializationException {
         System.out.println(Arrays.toString(args));
-        VirtualMachine attach = VirtualMachine.attach("34152");
+        VirtualMachine attach = VirtualMachine.attach("10856");
         attach.loadAgent("C:\\Users\\Administrator\\Documents\\MyHotDeployment\\HotDeploymentAgent\\target\\agent-1.0-jar-with-dependencies.jar",
                 "com.example.hotdeploymentstarter.test.SayService-com.example.hotdeploymentstarter.classloader.HotDeploymentClassLoader");
         attach.detach();

@@ -1,6 +1,7 @@
 package top.xizai.agent;
 
 import top.xizai.agent.asm.HotDeploymentAsmUtil;
+import top.xizai.agent.asm.cache.GlobalProxyCache;
 
 import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
@@ -40,26 +41,26 @@ public class HotDeploymentAgent {
         @Override
         public byte[] transform(ClassLoader loader, String clsName, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
 
-            System.out.println("className is " + clsName);
             //不处理目标类即可
             if (clsName.matches(".*" + className)) {
-                int randName = new Random().nextInt();
-                System.out.println("access in " + clsName);
+                /**
+                 * 判断是否有缓存
+                 */
+                // if (GlobalProxyCache.deploymentByteMap.containsKey(className)){
+                //     return (byte[]) GlobalProxyCache.deploymentByteMap.get(className);
+                // }
 
-                try {
-                    Files.write(Path.of("C:\\DevEnv\\" + randName + "origin.class"), classfileBuffer);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                // try {
+                //     Files.write(Path.of("C:\\DevEnv\\" + randName + "origin.class"), classfileBuffer);
+                // } catch (IOException e) {
+                //     throw new RuntimeException(e);
+                // }
 
                 byte[] bytes = HotDeploymentAsmUtil.changeMethodByClassBufferMethodVal(classfileBuffer, className);
 
-                System.out.println("werite " +"C:\\DevEnv\\" + randName + ".class");
 
-                try {
-                    Files.write(Path.of("C:\\DevEnv\\" + randName + ".class"), bytes);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+                if (bytes != null) {
+                    GlobalProxyCache.deploymentByteMap.put(className, bytes);
                 }
 
                 return bytes;

@@ -4,6 +4,8 @@ import cn.hutool.core.io.FileUtil;
 import com.example.hotdeploymentstarter.utils.DeployUtils;
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -19,6 +21,12 @@ public class HotDeploymentClassLoader extends ClassLoader{
     private String basePath;
 
     private ClassLoader parentClassLoader;
+
+    private static Map<String, byte[]> cache = new HashMap<>();
+
+    private static Map<String, Boolean> localClassExist = new HashMap<>();
+
+    private static HotDeploymentClassLoader instance;
 
     public HotDeploymentClassLoader() {
 
@@ -46,11 +54,16 @@ public class HotDeploymentClassLoader extends ClassLoader{
     @Override
     public Class<?> findClass(String name) throws ClassNotFoundException {
         try {
-            System.out.println("find class:" + name);
+            if (cache.containsKey(name)) {
+                byte[] bytes = cache.get(name);
+                return defineClass(bytes, 0, bytes.length);
+            }
 
             byte[] b = loadClassFromFile(name);
             if (!Objects.isNull(b)) {
-                return defineClass(name, b, 0, b.length);
+                Class<?> clazz = defineClass(name, b, 0, b.length);
+                cache.put(name, b);
+                return clazz;
             }
 
             //从父加载器找
@@ -65,8 +78,16 @@ public class HotDeploymentClassLoader extends ClassLoader{
         String fileName = DeployUtils.convertPackageName2Path(name) + ".class";
         String filePath = this.basePath + fileName;
 
-        if (!FileUtil.exist(filePath)) {
+        Boolean exist = localClassExist.get(filePath);
+        if (exist != null && exist == Boolean.FALSE) {
             return null;
+        }
+
+        if (!FileUtil.exist(filePath)) {
+            localClassExist.put(fileName, Boolean.FALSE);
+            return null;
+        }else {
+            localClassExist.put(fileName, Boolean.TRUE);
         }
 
         try (InputStream inputStream = new FileInputStream(filePath);
@@ -93,7 +114,11 @@ public class HotDeploymentClassLoader extends ClassLoader{
     }
 
     public static HotDeploymentClassLoader getInstance() {
-        HotDeploymentClassLoader loader = new HotDeploymentClassLoader("C:\\DevEnv");
-        return loader;
+        // if (instance == null) {
+        //     instance = new HotDeploymentClassLoader("C:\\DevEnv");
+        // }
+        // return instance;
+
+        return new HotDeploymentClassLoader("C:\\DevEnv");
     }
 }

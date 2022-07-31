@@ -45,7 +45,7 @@ public class TempClassLoader extends ClassLoader{
     @Override
     public Class<?> findClass(String name) throws ClassNotFoundException {
         try {
-            System.out.println("find class:" + name);
+            // System.out.println("find class:" + name);
 
             byte[] b = loadClassFromFile(name);
             if (!Objects.isNull(b)) {

@@ -31,7 +31,7 @@ public class HotAsmDeploymentTest{
         injectMyself2HotDeploy();
 
         while (true) {
-            Thread.sleep(10000);
+            Thread.sleep(1000);
             new SimpleService().say();
 
         }

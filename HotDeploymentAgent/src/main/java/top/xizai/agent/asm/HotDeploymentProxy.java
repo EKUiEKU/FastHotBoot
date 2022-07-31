@@ -4,6 +4,7 @@ import cn.hutool.core.util.ClassLoaderUtil;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import top.xizai.agent.asm.cache.GlobalProxyCache;
 import top.xizai.agent.asm.classloader.TempClassLoader;
 
@@ -41,15 +42,11 @@ public class HotDeploymentProxy extends ClassVisitor {
         super(ASM8, cv);
         this.deployClassFullName = deployClassFullName;
 
-        System.out.println(".................................");
-
         try {
             TempClassLoader classLoader = new TempClassLoader(GlobalProxyCache.classLoaderPath);
             clazz = classLoader.findClass(deployClassFullName);
 
             GlobalProxyCache.deployClassCache.put(deployClassFullName, clazz);
-
-            System.out.println(clazz.getSimpleName());
 
             Method[] methods = clazz.getMethods();
             for (Method method : methods) {
@@ -76,19 +73,23 @@ public class HotDeploymentProxy extends ClassVisitor {
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         super.visit(version, access, name, signature, superName, interfaces);
 
-        System.out.println("visit class in " + name);
+        try {
+            GlobalProxyCache.instanceCache.put(deployClassFullName, clazz.newInstance());
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
         MethodVisitor mv = super.visitMethod(access, name, descriptor, signature, exceptions);
-        System.out.println("access method in " + name);
-
         if (mv != null && !"<init>".equals(name) && !"<clinit>".equals(name)) {
             boolean isAbstractMethod = (access & ACC_ABSTRACT) != 0;
             boolean isNativeMethod = (access & ACC_NATIVE) != 0;
             if (!isAbstractMethod && !isNativeMethod) {
-                mv = new HotDeploymentMethodProxy(api, mv, name);
+                mv = new HotDeploymentMethodProxy(api, mv, name, descriptor);
             }
         }
         return mv;
@@ -98,24 +99,39 @@ public class HotDeploymentProxy extends ClassVisitor {
     public class HotDeploymentMethodProxy extends MethodVisitor {
         private String methodName;
 
-        public HotDeploymentMethodProxy(int api, MethodVisitor methodVisitor, String methodName) {
+        private String descriptor;
+
+        private Object instance;
+
+        public HotDeploymentMethodProxy(int api, MethodVisitor methodVisitor, String methodName, String descriptor) {
             super(api, methodVisitor);
             this.methodName = methodName;
+            this.descriptor = descriptor;
         }
 
         @Override
         public void visitCode() {
             String classLoaderClassPath = GlobalProxyCache.classLoaderFullName.replace('.', '/');
+            // Type[] types = Type.getArgumentTypes(descriptor);
+            // String params = Arrays.stream(types)
+            //         .map(type -> type.getClassName())
+            //         .collect(Collectors.joining("$"));
+            // String key = deployClassFullName + "$" + methodName + params;
+            //
+            // instance = GlobalProxyCache.instanceCache.get(deployClassFullName);
+            // Method method = GlobalProxyCache.methodsCache.get(key);
+
 
             /**
              * 获取类加载器的实例对象
              */
-            mv.visitMethodInsn(INVOKESTATIC, classLoaderClassPath, "getInstance", "()L" + classLoaderClassPath +";", false);
+            mv.visitMethodInsn(INVOKESTATIC, classLoaderClassPath, "getInstance", "()L" + classLoaderClassPath + ";", false);
             /**
              * 根据类加载器,获取目标对象
              */
             mv.visitLdcInsn(deployClassFullName);
             mv.visitMethodInsn(INVOKEVIRTUAL, classLoaderClassPath, "findClass", "(Ljava/lang/String;)Ljava/lang/Class;", false);
+
             mv.visitVarInsn(ASTORE, 1);
             /**
              * 实例化目标对象

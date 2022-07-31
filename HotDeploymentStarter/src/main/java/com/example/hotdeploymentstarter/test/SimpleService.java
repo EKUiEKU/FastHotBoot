@@ -17,20 +17,13 @@ public class SimpleService {
          * 调用一个待更新的对象
          */
 
-        /**
-         * 将SayService变成一个接口ISayService
-         * 加载SayService字节,并且通过ASM继承ISayService接口,最后实例并且强转成ISayService
-         * 调用ISayService接口 即可
-         */
+
+        long start = System.currentTimeMillis();
         String aa = new SayService().say();
         System.out.println(aa);
 
-        String s = new String("==============");
-        System.out.println(s);
-        // Class<?> clazz = HotDeploymentClassLoader.getInstance().findClass("com.example.hotdeploymentstarter.test.SayService");
-        // Object instance = clazz.newInstance();
-        // Method say = clazz.getMethod("say");
-        // String aa = (String) say.invoke(instance);
-        // System.out.println(aa);
+        System.out.println("==============");
+        System.out.println((System.currentTimeMillis() - start) + "ms.");
+
     }
 }

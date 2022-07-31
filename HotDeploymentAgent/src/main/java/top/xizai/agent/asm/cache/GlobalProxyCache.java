@@ -1,5 +1,6 @@
 package top.xizai.agent.asm.cache;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,7 +14,7 @@ public class GlobalProxyCache {
      * Method的缓存,用来映射
      * Key的命名规则: Class的权限定名 + '$' + MethodName + '$' + MethodParams(参数间$隔开)
      */
-    public static Map<String, Object> methodsCache = new HashMap<>();
+    public static Map<String, Method> methodsCache = new HashMap<>();
     /**
      * 用来缓存热部署的Class对象
      */
@@ -35,4 +36,6 @@ public class GlobalProxyCache {
      * 类加载器对象
      */
     public static ClassLoader classLoader;
+
+    public static Map<String, Object> deploymentByteMap = new HashMap<>();
 }
