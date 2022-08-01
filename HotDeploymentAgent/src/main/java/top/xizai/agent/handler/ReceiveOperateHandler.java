@@ -8,12 +8,15 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import top.xizai.agent.HotDeploymentAgent;
+import top.xizai.agent.HotDeploymentClassFileTransformer;
 import top.xizai.deployment.entity.AgentParams;
+import top.xizai.deployment.entity.DeployInfo;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.instrument.Instrumentation;
+import java.lang.instrument.UnmodifiableClassException;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -36,10 +39,7 @@ public class ReceiveOperateHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String requestMethod = exchange.getRequestMethod();
-        Headers requestHeaders = exchange.getRequestHeaders();
         InputStream requestBody = exchange.getRequestBody();
-
-
 
         if ("put".equalsIgnoreCase(requestMethod)) {
             try {
@@ -61,12 +61,31 @@ public class ReceiveOperateHandler implements HttpHandler {
         throw new UnsupportedOperationException("Undeveloped..");
     }
 
+    /**
+     * 对待部署的类进行验证,确保本地的类没有被人动过
+     */
+    public void doDeployment() {
+        // TODO 校验本地Class的Hash值
+    }
+
+    /**
+     * 执行热部署
+     * @param deployInfo
+     * @throws ClassNotFoundException
+     * @throws UnmodifiableClassException
+     */
+    public void doRealDeployment(DeployInfo deployInfo) throws ClassNotFoundException, UnmodifiableClassException {
+        inst.addTransformer(new HotDeploymentClassFileTransformer(deployInfo), true);
+        //触发transform执行
+        inst.retransformClasses(Class.forName(deployInfo.getClassFullName()));
+    }
+
     public void sendResponseMessage(HttpExchange e, int respCode, String msg) throws IOException {
         Map<String, Object> resp = new HashMap<>();
         resp.put("code", respCode);
         resp.put("msg", msg);
 
-        //发送200状态码
+        //发送200的状态码
         e.sendResponseHeaders(200, 0);
         e.getResponseHeaders().set("Content-Type", "application/json");
 

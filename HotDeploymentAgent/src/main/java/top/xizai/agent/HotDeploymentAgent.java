@@ -46,56 +46,5 @@ public class HotDeploymentAgent {
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
-
-        // inst.addTransformer(new HotDeploymentClassFileTransformer(args[0], args[1]), true);
-        // //触发transform执行
-        // inst.retransformClasses(Class.forName(args[0]));
-    }
-
-    static class HotDeploymentClassFileTransformer implements ClassFileTransformer {
-        private String className;
-        private String classLodeName;
-
-        public HotDeploymentClassFileTransformer(String className, String classLodeName) {
-            this.className = className;
-            this.classLodeName = classLodeName;
-        }
-
-        @Override
-        public byte[] transform(ClassLoader loader, String clsName, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
-
-            //不处理目标类即可
-            if (clsName.matches(".*" + className)) {
-                /**
-                 * 判断是否有缓存
-                 */
-                if (GlobalProxyCache.deploymentByteMap.containsKey(className)){
-                    return (byte[]) GlobalProxyCache.deploymentByteMap.get(className);
-                }
-
-                byte[] bytes = HotDeploymentAsmUtil.changeMethodByClassBufferMethodVal(classfileBuffer, className);
-
-
-                if (bytes != null) {
-                    /**
-                     * 缓存原始的字节码
-                     * 将原始对象压入栈中,方便后期回溯原始对象
-                     */
-                    Stack<Object> byteStack = GlobalProxyCache.originByteMap.get(clsName);
-                    if (bytes == null) {
-                        byteStack = new Stack<>();
-                    }
-                    byteStack.push(classfileBuffer);
-
-                    /**
-                     * 缓存编辑后的字节码
-                     */
-                    GlobalProxyCache.deploymentByteMap.put(className, bytes);
-                }
-
-                return bytes;
-            }
-            return new byte[0];
-        }
     }
 }
