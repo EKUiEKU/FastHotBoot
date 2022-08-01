@@ -46,9 +46,9 @@ public class HotDeploymentAgent {
                 /**
                  * 判断是否有缓存
                  */
-                // if (GlobalProxyCache.deploymentByteMap.containsKey(className)){
-                //     return (byte[]) GlobalProxyCache.deploymentByteMap.get(className);
-                // }
+                if (GlobalProxyCache.deploymentByteMap.containsKey(className)){
+                    return (byte[]) GlobalProxyCache.deploymentByteMap.get(className);
+                }
 
                 // try {
                 //     Files.write(Path.of("C:\\DevEnv\\" + randName + "origin.class"), classfileBuffer);
