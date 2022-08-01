@@ -20,14 +20,6 @@ import java.lang.reflect.Method;
  **/
 public class HotAsmDeploymentTest{
     public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        // new HotAsmDeploymentTest().start();
-
-        // HotDeploymentClassLoader loader = new HotDeploymentClassLoader("C:\\DevEnv");
-        // Class<?> clazz = Class.forName("top.xizai.test.asm.SimpleService", true, loader);
-        // Object newInstance = clazz.newInstance();
-        // Method say = clazz.getMethod("say");
-        // say.invoke(newInstance);
-
         injectMyself2HotDeploy();
 
         while (true) {
@@ -45,15 +37,5 @@ public class HotAsmDeploymentTest{
         String pid = names[0];
 
         System.out.println(pid);
-        String targetClass = "top.xizai.test.asm.SimpleService";
-
-        // String args = targetClass + "-" + HotDeploymentClassLoader.class.getName();
-        // String agentPath = ResourceUtils.getFile("HotDeploymentAgent-1.0.jar").getAbsolutePath();
-        // String injectorPath = ResourceUtils.getFile("HotDeploymentInjector-1.0.jar").getAbsolutePath();
-
-
-        // System.out.println(agentPath);
-        // System.out.println(injectorPath);
-        // System.out.println(args);
     }
 }

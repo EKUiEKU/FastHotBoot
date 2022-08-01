@@ -3,6 +3,7 @@ package top.xizai.agent.asm.cache;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 
 /**
  * @author: WSC
@@ -36,6 +37,13 @@ public class GlobalProxyCache {
      * 类加载器对象
      */
     public static ClassLoader classLoader;
-
+    /**
+     * 缓存编辑后的字节码
+     */
     public static Map<String, Object> deploymentByteMap = new HashMap<>();
+    /**
+     * 缓存原始的字节码
+     */
+    public static Map<String, Stack<Object>> originByteMap = new HashMap<>();
+
 }

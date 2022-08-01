@@ -1,19 +1,13 @@
 package top.xizai.agent.asm;
 
-import cn.hutool.core.util.ClassLoaderUtil;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import top.xizai.agent.asm.cache.GlobalProxyCache;
 import top.xizai.agent.asm.classloader.TempClassLoader;
 
-import java.io.File;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.objectweb.asm.Opcodes.*;
@@ -89,7 +83,13 @@ public class HotDeploymentProxy extends ClassVisitor {
             boolean isAbstractMethod = (access & ACC_ABSTRACT) != 0;
             boolean isNativeMethod = (access & ACC_NATIVE) != 0;
             if (!isAbstractMethod && !isNativeMethod) {
-                mv = new HotDeploymentMethodProxy(api, mv, name, descriptor);
+                /**
+                 * 判断最新的Class对象是否有包含调用函数
+                 */
+                String methodKey = getMethodKey(name, descriptor);
+                if (GlobalProxyCache.methodsCache.containsKey(methodKey)) {
+                    mv = new HotDeploymentMethodProxy(api, mv, name, descriptor);
+                }
             }
         }
         return mv;
@@ -99,28 +99,14 @@ public class HotDeploymentProxy extends ClassVisitor {
     public class HotDeploymentMethodProxy extends MethodVisitor {
         private String methodName;
 
-        private String descriptor;
-
-        private Object instance;
-
         public HotDeploymentMethodProxy(int api, MethodVisitor methodVisitor, String methodName, String descriptor) {
             super(api, methodVisitor);
             this.methodName = methodName;
-            this.descriptor = descriptor;
         }
 
         @Override
         public void visitCode() {
             String classLoaderClassPath = GlobalProxyCache.classLoaderFullName.replace('.', '/');
-            // Type[] types = Type.getArgumentTypes(descriptor);
-            // String params = Arrays.stream(types)
-            //         .map(type -> type.getClassName())
-            //         .collect(Collectors.joining("$"));
-            // String key = deployClassFullName + "$" + methodName + params;
-            //
-            // instance = GlobalProxyCache.instanceCache.get(deployClassFullName);
-            // Method method = GlobalProxyCache.methodsCache.get(key);
-
 
             /**
              * 获取类加载器的实例对象
@@ -168,5 +154,13 @@ public class HotDeploymentProxy extends ClassVisitor {
 
             super.visitCode();
         }
+    }
+
+    public String getMethodKey(String methodName, String descriptor) {
+        Type[] types = Type.getArgumentTypes(descriptor);
+        String params = Arrays.stream(types)
+                .map(type -> type.getClassName())
+                .collect(Collectors.joining("$"));
+        return deployClassFullName + "$" + methodName + "$" + params;
     }
 }
