@@ -7,3 +7,6 @@
 **fix** 修改单独打包,无法运行的问题;<br>
 **mod** 将启动时从磁盘载入部署的信息从EventStart改到RefreshEvent;<br>
 **mod** 重写HotDeploymentClass的equals和hashcode,当部署的路径、类名、包名一致的时候,认为是同一个对象。<br>
+
+<h1>AMS熱部署原理</h1>
+<img src="./img/热部署.png">
