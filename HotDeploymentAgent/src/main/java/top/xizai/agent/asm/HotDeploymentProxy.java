@@ -5,9 +5,11 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 import top.xizai.agent.asm.cache.GlobalProxyCache;
 import top.xizai.agent.asm.classloader.TempClassLoader;
+import top.xizai.deployment.entity.DeployInfo;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.objectweb.asm.Opcodes.*;
@@ -27,14 +29,19 @@ public class HotDeploymentProxy extends ClassVisitor {
      * 热部署的字节码对象
      */
     private Class clazz;
+    /**
+     * 热部署信息
+     */
+    private DeployInfo deployInfo;
 
     /**
-     *
-     * @param deployClassFullName   热部署类的全限定名
+     * @param deployInfo 热部署信息
      */
-    public HotDeploymentProxy(ClassVisitor cv, String deployClassFullName) {
+    public HotDeploymentProxy(ClassVisitor cv, DeployInfo deployInfo) {
         super(ASM8, cv);
-        this.deployClassFullName = deployClassFullName;
+        this.deployClassFullName = deployInfo.getClassFullName();
+        List<String> specifyMethods = deployInfo.getSpecifyMethods();
+        List<String> ignoreMethods = deployInfo.getIgnoreMethods();
 
         try {
             TempClassLoader classLoader = new TempClassLoader(GlobalProxyCache.classLoaderPath);
@@ -45,18 +52,24 @@ public class HotDeploymentProxy extends ClassVisitor {
             Method[] methods = clazz.getMethods();
             for (Method method : methods) {
                 String methodName = method.getName();
-                String methodParams = Arrays.stream(method.getParameterTypes())
-                        .map(m -> m.getName())
-                        .collect(Collectors.joining("$"));
-                StringBuilder sb = new StringBuilder();
-                sb.append(deployClassFullName)
-                        .append("$")
-                        .append(methodName)
-                        .append("$")
-                        .append(methodParams);
+                /**
+                 * 指定方法更新和忽略方法更新
+                 */
+                if (specifyMethods != null && specifyMethods.contains(methodName)
+                        || ignoreMethods != null && !ignoreMethods.contains(methodName)) {
+                    String methodParams = Arrays.stream(method.getParameterTypes())
+                            .map(m -> m.getName())
+                            .collect(Collectors.joining("$"));
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(deployClassFullName)
+                            .append("$")
+                            .append(methodName)
+                            .append("$")
+                            .append(methodParams);
 
-                GlobalProxyCache.methodsCache.put(sb.toString(), method);
-                method.setAccessible(true);
+                    method.setAccessible(true);
+                    GlobalProxyCache.methodsCache.put(sb.toString(), method);
+                }
             }
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);

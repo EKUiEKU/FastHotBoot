@@ -44,7 +44,6 @@ public class ReceiveClassHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String requestMethod = exchange.getRequestMethod();
-        Headers requestHeaders = exchange.getRequestHeaders();
         InputStream requestBody = exchange.getRequestBody();
         InetAddress remoteIp = exchange.getRemoteAddress().getAddress();
 
