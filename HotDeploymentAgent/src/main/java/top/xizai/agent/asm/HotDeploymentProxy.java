@@ -5,7 +5,9 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 import top.xizai.agent.asm.cache.GlobalProxyCache;
 import top.xizai.agent.asm.classloader.TempClassLoader;
+import top.xizai.deployment.entity.ClassObject;
 import top.xizai.deployment.entity.DeployInfo;
+import top.xizai.deployment.entity.MethodObject;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -39,6 +41,8 @@ public class HotDeploymentProxy extends ClassVisitor {
      */
     public HotDeploymentProxy(ClassVisitor cv, DeployInfo deployInfo) {
         super(ASM8, cv);
+        this.deployInfo = deployInfo;
+
         this.deployClassFullName = deployInfo.getClassFullName();
         List<String> specifyMethods = deployInfo.getSpecifyMethods();
         List<String> ignoreMethods = deployInfo.getIgnoreMethods();
@@ -47,7 +51,7 @@ public class HotDeploymentProxy extends ClassVisitor {
             TempClassLoader classLoader = new TempClassLoader(GlobalProxyCache.classLoaderPath);
             clazz = classLoader.findClass(deployClassFullName);
 
-            GlobalProxyCache.deployClassCache.put(deployClassFullName, clazz);
+            GlobalProxyCache.deployClassCache.put(deployClassFullName, new ClassObject(clazz, deployInfo.getVersion(), deployClassFullName));
 
             Method[] methods = clazz.getMethods();
             for (Method method : methods) {
@@ -68,7 +72,7 @@ public class HotDeploymentProxy extends ClassVisitor {
                             .append(methodParams);
 
                     method.setAccessible(true);
-                    GlobalProxyCache.methodsCache.put(sb.toString(), method);
+                    GlobalProxyCache.methodsCache.put(sb.toString(), new MethodObject(method, deployInfo.getVersion(), methodName));
                 }
             }
         } catch (ClassNotFoundException e) {
@@ -101,7 +105,13 @@ public class HotDeploymentProxy extends ClassVisitor {
                  */
                 String methodKey = getMethodKey(name, descriptor);
                 if (GlobalProxyCache.methodsCache.containsKey(methodKey)) {
-                    mv = new HotDeploymentMethodProxy(api, mv, name, descriptor);
+                    MethodObject methodObject = GlobalProxyCache.methodsCache.get(methodKey);
+                    /**
+                     * 判断版本号是否一致
+                     */
+                    if (methodObject.getVersion().equals(deployInfo.getVersion())) {
+                        mv = new HotDeploymentMethodProxy(api, mv, name, descriptor);
+                    }
                 }
             }
         }

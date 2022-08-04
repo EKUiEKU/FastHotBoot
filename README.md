@@ -16,5 +16,8 @@
 ## 8.3
 **add** add 编写Agent远程调用的全部署(REPLACE_CLASS)和部分部署模式(REPLACE_METHOD),并且通过测试。<br>
 
+## 8.4
+**add** add 编写Agent远程调用的回滚(ROLL_BACK)模式,并且通过测试。<br>
+
 <h1>AMS熱部署原理</h1>
 <img src="./img/热部署.png">

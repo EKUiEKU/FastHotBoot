@@ -17,7 +17,7 @@ public class DeployInfo {
     /**
      * 时间戳,作为Class的版本号
      */
-    private Long timestamp;
+    private Long version;
     /**
      * 部署类型
      */
@@ -43,12 +43,12 @@ public class DeployInfo {
         this.classFullName = classFullName;
     }
 
-    public Long getTimestamp() {
-        return timestamp;
+    public Long getVersion() {
+        return version;
     }
 
-    public void setTimestamp(Long timestamp) {
-        this.timestamp = timestamp;
+    public void setVersion(Long version) {
+        this.version = version;
     }
 
     public DeployType getDeployType() {

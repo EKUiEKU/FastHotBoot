@@ -110,18 +110,18 @@ public class ReceiveOperateHandler implements HttpHandler {
                         // 检查是否有指定的方法名称,或者是指定的忽略的名称
                         // 没有的话直接部署整个Class文件,走下一步。
                     case REPLACE_CLASS:
-                        this.doRealDeployment(deployInfo);
                         break;
                     case ROLLBACK:
                         // 根据版本号回滚历史Class对象
-                        throw new UnsupportedOperationException("Undeveloped!");
                 }
+
+                this.doRealDeployment(deployInfo);
             } catch (Exception e) {
-                log.log(Level.WARNING, "deploying class file %s occur some error, error message is: %s",
+                log.log(Level.WARNING, "deploying class file {0} occur some error, error message is: {1}",
                         new Object[]{deployInfo.getClassFullName(), e.getMessage()});
             }
         } else {
-            log.log(Level.WARNING, "class file %s is be modified!", deployInfo.getClassFullName());
+            log.log(Level.WARNING, "class file {0} is be modified!", deployInfo.getClassFullName());
         }
     }
 
@@ -133,19 +133,18 @@ public class ReceiveOperateHandler implements HttpHandler {
      * @throws UnmodifiableClassException
      */
     public void doRealDeployment(DeployInfo deployInfo) throws ClassNotFoundException, UnmodifiableClassException {
-        inst.addTransformer(new HotDeploymentClassFileTransformer(deployInfo), true);
+        if (GlobalProxyCache.cacheClassFileTransformer.containsKey(deployInfo.getClassFullName())) {
+            HotDeploymentClassFileTransformer transformer = GlobalProxyCache.cacheClassFileTransformer.get(deployInfo.getClassFullName());
+            inst.removeTransformer(transformer);
+        }
+        HotDeploymentClassFileTransformer latestTransformer = new HotDeploymentClassFileTransformer(deployInfo);
+        inst.addTransformer(latestTransformer, true);
         //触发transform执行
         inst.retransformClasses(Class.forName(deployInfo.getClassFullName()));
+
+        GlobalProxyCache.cacheClassFileTransformer.put(deployInfo.getClassFullName(), latestTransformer);
     }
 
-    /**
-     * 恢复已经热部署的Class文件
-     * @param className         类全限定名
-     * @param historyVersion    历史的版本
-     */
-    public void doRecoverClass(String className, String historyVersion) {
-
-    }
 
     public void sendResponseMessage(HttpExchange e, int respCode, String msg) throws IOException {
         Map<String, Object> resp = new HashMap<>();

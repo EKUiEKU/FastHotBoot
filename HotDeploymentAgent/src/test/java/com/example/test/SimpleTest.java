@@ -8,6 +8,8 @@ import top.xizai.deployment.entity.DeployInfo;
 import top.xizai.deployment.enums.DeployType;
 
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author: WSC
@@ -18,7 +20,14 @@ public class SimpleTest {
     private static String secret = "abcd";
 
     public static void main(String[] args) {
-        System.out.println(getFileHash("C:\\DevEnv\\com\\example\\hotdeploymentstarter\\test\\SayService.class"));
+        // System.out.println(getFileHash("C:\\DevEnv\\com\\example\\hotdeploymentstarter\\test\\SayService.class"));
+        // DeployInfo deployInfo = new DeployInfo();
+        // deployInfo.setDeployType(DeployType.ROLLBACK);
+        // System.out.println(JSON.toJSONString(deployInfo));
+
+        Logger log = Logger.getLogger(SimpleTest.class.getSimpleName());
+        log.log(Level.WARNING, "hello {0}", "wrold");
+
     }
 
     public static String getFileHash(String filePath) {
