@@ -18,7 +18,7 @@ public class HotDeploymentClassLoader extends ClassLoader{
         registerAsParallelCapable();
     }
 
-    private String basePath;
+    private static String basePath;
 
     private ClassLoader parentClassLoader;
 
@@ -29,10 +29,6 @@ public class HotDeploymentClassLoader extends ClassLoader{
     private static HotDeploymentClassLoader instance;
 
     public HotDeploymentClassLoader() {
-
-    }
-
-    public HotDeploymentClassLoader(String basePath) {
         if (!basePath.isEmpty()
                 && basePath.charAt(basePath.length() - 1) != File.separatorChar) {
             basePath += File.separatorChar;
@@ -113,12 +109,15 @@ public class HotDeploymentClassLoader extends ClassLoader{
         return c;
     }
 
-    public static HotDeploymentClassLoader getInstance() {
-        // if (instance == null) {
-        //     instance = new HotDeploymentClassLoader("C:\\DevEnv");
-        // }
-        // return instance;
+    /**
+     * 注册部署类的根目录
+     * @param deployClassPath
+     */
+    public static void resignDeployClassPath(String deployClassPath) {
+        basePath = deployClassPath;
+    }
 
-        return new HotDeploymentClassLoader("C:\\DevEnv");
+    public static HotDeploymentClassLoader getInstance() {
+        return new HotDeploymentClassLoader();
     }
 }

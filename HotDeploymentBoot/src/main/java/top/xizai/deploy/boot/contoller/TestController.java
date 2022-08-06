@@ -1,5 +1,6 @@
 package top.xizai.deploy.boot.contoller;
 
+import com.example.hotdeploymentstarter.test.SayService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -13,5 +14,10 @@ public class TestController {
     @GetMapping("/hello")
     public String hello() {
         return "world!!!!";
+    }
+
+    @GetMapping("/say")
+    public String say() {
+        return new SayService().say();
     }
 }

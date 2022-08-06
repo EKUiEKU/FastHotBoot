@@ -4,13 +4,10 @@ package com.example.hotdeploymentstarter.test;
 ;
 
 
-import com.example.hotdeploymentstarter.classloader.HotDeploymentClassLoader;
-
 import java.io.IOException;
 
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 
 /**

@@ -59,8 +59,8 @@ public class HotDeploymentProxy extends ClassVisitor {
                 /**
                  * 指定方法更新和忽略方法更新
                  */
-                if (specifyMethods != null && specifyMethods.contains(methodName)
-                        || ignoreMethods != null && !ignoreMethods.contains(methodName)) {
+                if (specifyMethods == null || specifyMethods.contains(methodName)
+                        || ignoreMethods == null || !ignoreMethods.contains(methodName)) {
                     String methodParams = Arrays.stream(method.getParameterTypes())
                             .map(m -> m.getName())
                             .collect(Collectors.joining("$"));

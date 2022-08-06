@@ -42,6 +42,7 @@ public class HotDeploymentAgent {
             httpServer.start();
             httpServer.createContext("/", new ReceiveOperateHandler(inst, secret));
 
+            log.info("Remote deployment agent is listen port on " + port + ".");
             log.info("Remote deployment agent initialized.");
         } catch (Throwable e) {
             throw new RuntimeException(e);

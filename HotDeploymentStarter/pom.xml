@@ -81,6 +81,11 @@
             <version>2.0.9.graal</version>
         </dependency>
 
+        <dependency>
+            <groupId>top.xizai.deployment</groupId>
+            <artifactId>Common</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>

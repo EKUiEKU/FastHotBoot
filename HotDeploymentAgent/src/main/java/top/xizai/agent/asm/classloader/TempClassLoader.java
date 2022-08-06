@@ -90,9 +90,4 @@ public class TempClassLoader extends ClassLoader{
         }
         return c;
     }
-
-    public static TempClassLoader getInstance() {
-        TempClassLoader loader = new TempClassLoader("C:\\DevEnv");
-        return loader;
-    }
 }

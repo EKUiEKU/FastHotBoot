@@ -1,26 +1,23 @@
 package com.example.hotdeploymentstarter.utils;
 
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
+import cn.hutool.crypto.SignUtil;
+import cn.hutool.http.HttpUtil;
+import com.alibaba.fastjson.JSON;
 import com.example.hotdeploymentstarter.classloader.HotDeploymentClassLoader;
 import com.example.hotdeploymentstarter.entity.Constant;
 import com.example.hotdeploymentstarter.entity.HotDeployProperties;
 import com.example.hotdeploymentstarter.entity.HotDeploymentClass;
-import com.example.hotdeploymentstarter.handler.ReceiveClassHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
@@ -30,16 +27,19 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+import top.xizai.deployment.entity.AgentParams;
+import top.xizai.deployment.entity.DeployInfo;
+import top.xizai.deployment.enums.DeployType;
 
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author: WSC
@@ -188,13 +188,15 @@ public class DeployUtils {
      * @param deploymentClass
      */
     public Boolean hotDeployment(List<HotDeploymentClass> deploymentClass) {
-        HotDeploymentClassLoader loader = new HotDeploymentClassLoader(getDeployClassPath());
+        HotDeploymentClassLoader loader = new HotDeploymentClassLoader();
         List<Class> leastClazzList = new ArrayList<>();
+        Map<String, HotDeploymentClass> hotDeploymentClassMap = new HashMap<>();
 
         for (HotDeploymentClass clazzInfo : deploymentClass) {
             try {
                 Class<?> leastClazz = Class.forName(clazzInfo.getFullPackageName(), true, loader);
                 leastClazzList.add(leastClazz);
+                hotDeploymentClassMap.put(clazzInfo.getFullPackageName(), clazzInfo);
             } catch (Throwable e) {
                 log.error(e.getMessage(), e);
                 return false;
@@ -205,10 +207,11 @@ public class DeployUtils {
         // 热部署
         for (Class clazz : leastClazzList) {
             try {
+                HotDeploymentClass deploymentInfo = hotDeploymentClassMap.get(clazz.getName());
                 /**
                  * 用ASM改变class文件字节码来实现热部署
                  */
-                registerObject(clazz);
+                registerObject(clazz, deploymentInfo);
 
                 /**
                  * IOC类仅需将我们最新的class对象放入IOC容器即可
@@ -227,11 +230,33 @@ public class DeployUtils {
 
     /**
      * 通过ASM技术将所有字节码中拥有本来的new关键字全部通过反射实例化最新的对象
+     *
      * @param clazz
+     * @param deploymentClassInfo
      */
-    private boolean registerObject(Class clazz) {
-        //TODO ASM
-        return false;
+    private boolean registerObject(Class clazz, HotDeploymentClass deploymentClassInfo) {
+        DeployInfo deployInfo = new DeployInfo();
+        deployInfo.setDeployType(DeployType.REPLACE_CLASS);
+        deployInfo.setVersion(System.currentTimeMillis());
+        deployInfo.setHashCode(deploymentClassInfo.getHash());
+        deployInfo.setClassFullName(deploymentClassInfo.getFullPackageName());
+
+        AgentParams params = new AgentParams();
+        params.setClassLoaderFullName(HotDeploymentClassLoader.class.getName());
+        params.setClassLoaderPath(this.getDeployClassPath());
+        params.setDeployments(Arrays.asList(deployInfo));
+
+        Map deployInfoMap = JSON.parseObject(JSON.toJSONString(params), Map.class);
+        String sign = SignUtil.signParamsMd5(deployInfoMap);
+
+        params.setSign(sign);
+
+        String url = "127.0.0.1:" + hotDeployProperties.getAgentPort();
+
+        String ret = HttpUtil.post(url, JSON.toJSONString(params));
+        log.info("remote agent response info:{}", ret);
+
+        return true;
     }
 
     /**
@@ -255,6 +280,7 @@ public class DeployUtils {
 
     /**
      * 如果是Controller,则将其注册到URL映射中
+     *
      * @param clazz
      * @return
      */
@@ -269,7 +295,7 @@ public class DeployUtils {
 
                 doUnregisterBean(clazzName);
                 return doRegisterBean(clazzName);
-            }catch (Throwable e) {
+            } catch (Throwable e) {
                 log.error(e.getMessage(), e);
             }
         }
@@ -336,6 +362,7 @@ public class DeployUtils {
 
     /**
      * 如果Class上面有注入的注解,则将其注入到IOC容器中
+     *
      * @param clazz
      * @return
      */
@@ -361,12 +388,101 @@ public class DeployUtils {
             Annotation scope = clazz.getAnnotation(Scope.class);
             if (scope != null) {
                 rawBeanDefinition.setScope(scope.toString());
-            }else {
+            } else {
                 rawBeanDefinition.setScope("singleton");
             }
 
             beanFactory.registerBeanDefinition(objName, rawBeanDefinition);
         }
         return false;
+    }
+
+
+    public static void executeJar(String jarFilePath, List args) {
+        BufferedReader error;
+        BufferedReader op;
+        int exitVal;
+
+        final List actualArgs = new ArrayList();
+
+        actualArgs.add(0, "java");
+
+        actualArgs.add(1, "-jar");
+
+        actualArgs.add(2, jarFilePath);
+
+        actualArgs.addAll(args);
+
+        try {
+
+            final Runtime re = Runtime.getRuntime();
+
+
+            final Process command = re.exec((String[]) actualArgs.toArray(new String[0]));
+
+            error = new BufferedReader(new InputStreamReader(command.getErrorStream()));
+
+            op = new BufferedReader(new InputStreamReader(command.getInputStream()));
+
+
+            command.waitFor();
+
+            exitVal = command.exitValue();
+
+            if (exitVal != 0) {
+
+                throw new IOException("Failed to execure jar, " + getExecutionLog(error, op));
+
+            }
+
+        } catch (final IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public static String getExecutionLog(BufferedReader error, BufferedReader op) {
+
+        String errorResult = "";
+
+        String line;
+
+        try {
+
+            while ((line = error.readLine()) != null) {
+
+                errorResult = errorResult + "\n" + line;
+
+            }
+
+        } catch (final IOException e) {
+
+        }
+
+        String output = "";
+
+        try {
+
+            while ((line = op.readLine()) != null) {
+
+                output = output + "\n" + line;
+
+            }
+
+        } catch (final IOException e) {
+
+        }
+
+        try {
+
+            error.close();
+
+            op.close();
+
+        } catch (final IOException e) {
+
+        }
+
+        return errorResult;
     }
 }

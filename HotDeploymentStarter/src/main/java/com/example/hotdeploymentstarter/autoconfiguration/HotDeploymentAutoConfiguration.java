@@ -1,5 +1,6 @@
 package com.example.hotdeploymentstarter.autoconfiguration;
 
+import com.example.hotdeploymentstarter.classloader.HotDeploymentClassLoader;
 import com.example.hotdeploymentstarter.entity.HotDeployProperties;
 import com.example.hotdeploymentstarter.entity.HotDeploymentClassSet;
 import com.example.hotdeploymentstarter.handler.ReceiveClassHandler;
@@ -12,9 +13,16 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.ResourceUtils;
+import top.xizai.deployment.constants.FileConstants;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author wsc
@@ -24,7 +32,6 @@ import java.net.InetSocketAddress;
 @EnableConfigurationProperties(HotDeployProperties.class)
 public class HotDeploymentAutoConfiguration {
     private Logger log = LoggerFactory.getLogger(HotDeploymentAutoConfiguration.class);
-
     @Bean
     @ConditionalOnClass(HttpServer.class)
     public DeployUtils deployUtils(HotDeployProperties properties, ConfigurableApplicationContext ctx) throws IOException {
@@ -40,10 +47,33 @@ public class HotDeploymentAutoConfiguration {
 
         //监听事件
         httpServer.createContext("/deploy", new ReceiveClassHandler(deployUtils, deploymentClassSet));
+        //注册部署类的根目录
+        HotDeploymentClassLoader.resignDeployClassPath(deployUtils.getDeployClassPath());
 
+        this.injectorDeployAgent(properties.getAgentPort(), properties.getSalt());
         return httpServer;
     }
 
+    /**
+     * 启动热部署代理
+     *
+     * @throws FileNotFoundException
+     */
+    private void injectorDeployAgent(Integer agentPort, String salt) throws FileNotFoundException {
+        File agentFile = ResourceUtils.getFile(FileConstants.AGENT_NAME);
+        File injectorFile = ResourceUtils.getFile(FileConstants.INJECTOR_NAME);
+
+        // 获取当前进程的PID
+        String name = ManagementFactory.getRuntimeMXBean().getName();
+        String[] names = name.split("@");
+        String pid = names[0];
+
+        // Agent的参数
+        String options = agentPort + "-" + salt;
+
+        List<String> list = Arrays.asList(pid, agentFile.getAbsolutePath(), options);
+        DeployUtils.executeJar(injectorFile.getAbsolutePath(), list);
+    }
 
 
     @Bean

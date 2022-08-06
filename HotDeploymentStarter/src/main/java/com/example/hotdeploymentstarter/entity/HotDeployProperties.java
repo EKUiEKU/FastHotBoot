@@ -26,6 +26,18 @@ public class HotDeployProperties {
      * 加密的盐
      */
     private String salt = HexUtil.encodeHexStr("hotDeploy");
+    /**
+     * 字节码热部署代理端口
+     */
+    private Integer agentPort = 9732;
+
+    public Integer getAgentPort() {
+        return agentPort;
+    }
+
+    public void setAgentPort(Integer agentPort) {
+        this.agentPort = agentPort;
+    }
 
     public Boolean getEnable() {
         return enable;

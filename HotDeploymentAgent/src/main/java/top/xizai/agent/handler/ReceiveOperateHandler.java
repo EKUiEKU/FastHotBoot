@@ -3,6 +3,7 @@ package top.xizai.agent.handler;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.crypto.SecureUtil;
+import cn.hutool.crypto.SignUtil;
 import cn.hutool.http.HttpStatus;
 import com.alibaba.fastjson.JSON;
 
@@ -47,18 +48,21 @@ public class ReceiveOperateHandler implements HttpHandler {
         String requestMethod = exchange.getRequestMethod();
         InputStream requestBody = exchange.getRequestBody();
 
-        if ("put".equalsIgnoreCase(requestMethod)) {
+        if ("post".equalsIgnoreCase(requestMethod)) {
             try {
                 String body = IoUtil.readUtf8(requestBody);
                 AgentParams agentParams = JSON.parseObject(body, AgentParams.class);
                 /**
                  * 校验发过来的参数签是否正确
                  */
-                String sign = md5(body);
+                Map mapWithSign = JSON.parseObject(JSON.toJSONString(agentParams), Map.class);
+                mapWithSign.remove("sign");
+                String sign = SignUtil.signParamsMd5(mapWithSign);
+
                 if (!sign.equals(agentParams.getSign())) {
                     System.out.println("sign:" + sign);
                     sendResponseMessage(exchange, HttpStatus.HTTP_BAD_REQUEST, "bad sign!");
-                    // return;
+                    return;
                 }
 
                 doHandler(agentParams);
