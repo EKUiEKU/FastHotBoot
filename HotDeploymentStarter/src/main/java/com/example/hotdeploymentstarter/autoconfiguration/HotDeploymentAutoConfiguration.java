@@ -1,5 +1,6 @@
 package com.example.hotdeploymentstarter.autoconfiguration;
 
+import cn.hutool.core.io.FileUtil;
 import com.example.hotdeploymentstarter.classloader.HotDeploymentClassLoader;
 import com.example.hotdeploymentstarter.entity.HotDeployProperties;
 import com.example.hotdeploymentstarter.entity.HotDeploymentClassSet;
@@ -19,6 +20,7 @@ import top.xizai.deployment.constants.FileConstants;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
@@ -60,8 +62,19 @@ public class HotDeploymentAutoConfiguration {
      * @throws FileNotFoundException
      */
     private void injectorDeployAgent(Integer agentPort, String salt) throws FileNotFoundException {
-        File agentFile = ResourceUtils.getFile(FileConstants.AGENT_NAME);
-        File injectorFile = ResourceUtils.getFile(FileConstants.INJECTOR_NAME);
+        /**
+         * 将本地的jar文件放置系统目录
+         */
+        InputStream agentInputStream = this.getClass().getClassLoader().getResourceAsStream(FileConstants.AGENT_NAME);
+        InputStream injectorInputStream = this.getClass().getClassLoader().getResourceAsStream(FileConstants.INJECTOR_NAME);
+
+        String agentHomePath = FileUtil.getAbsolutePath(new File(FileConstants.AGENT_HOME));
+
+        File agentFile = new File(agentHomePath + File.separatorChar + FileConstants.AGENT_NAME);
+        File injectorFile = new File(agentHomePath + File.separatorChar + FileConstants.INJECTOR_NAME);
+
+        FileUtil.writeFromStream(agentInputStream, agentFile);
+        FileUtil.writeFromStream(injectorInputStream, injectorFile);
 
         // 获取当前进程的PID
         String name = ManagementFactory.getRuntimeMXBean().getName();

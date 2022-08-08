@@ -7,12 +7,22 @@ package top.xizai.deployment.constants;
  **/
 public class FileConstants {
     /**
-     * 代理的文件名
+     * ClassPath 代理的文件名
      */
-    public final static String AGENT_NAME = "classpath:agent.jar";
+    public final static String CLASSPATH_AGENT_NAME = "classpath:agent.jar";
     /**
-     * 注入器文件名
+     * agent文件名
      */
-    public final static String INJECTOR_NAME = "classpath:injector.jar";
+    public final static String AGENT_NAME = "agent.jar";
+    /**
+     * ClassPath 注入器文件名
+     */
+    public final static String  CLASSPATH_INJECTOR_NAME = "classpath:injector.jar";
+    /**
+     * 注入器的文件名
+     */
+    public final static String  INJECTOR_NAME = "injector.jar";
+
+    public final static String AGENT_HOME = ".";
 
 }

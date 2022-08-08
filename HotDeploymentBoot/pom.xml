@@ -90,16 +90,16 @@
                     <rm>true</rm>
 
                     <!--指定基础镜像jdk11-->
-                    <baseImage>openjdk:11-jre</baseImage>
+                    <baseImage>openjdk:11</baseImage>
 
                     <!--切换到logs目录-->
-                    <workdir>/logs</workdir>
+                    <workdir>/log</workdir>
 
                     <!--查看我们的java版本-->
                     <cmd>["java", "-version"]</cmd>
 
                     <!--${project.build.finalName}.jar是打包后生成的jar包的名字 加入UTF-8编码避免中文乱码-->
-                    <entryPoint>["java", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005", "-Dfile.encoding=UTF-8", "-jar", "/${project.build.finalName}.jar", "--spring.profiles.active=prod"]</entryPoint>
+                    <entryPoint>["java", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006", "-Dfile.encoding=UTF-8", "-jar", "/${project.build.finalName}.jar", "--spring.profiles.active=prod"]</entryPoint>
 
                     <!--指定远程 docker api地址-->
                     <dockerHost>https://114.116.8.153:2375</dockerHost>
