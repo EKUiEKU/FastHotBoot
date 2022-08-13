@@ -1,4 +1,26 @@
 # MyHotDeployment
+## 模块介绍
+<ul>
+    <li><strong>Common</strong> 存放公共基础类</li>
+    <li><strong>HotDeploymentAgent</strong> 实现ASM热部署的工具</li>
+    <li><strong>HotDeploymentInjector</strong> 注入器,将ASM热部署工具注入到目标程序中</li>
+    <li><strong>HotDeploymentSample</strong> 基于Spring Boot的实例程序</li>
+    <li><strong>HotDeploymentStarter</strong> 热部署的Spring Boot Starter</li>
+    <li><strong>HotDeploymentWeb</strong> 用于操作热部署的后台管理系统</li>
+</ul>
+
+## 演示
+
+### 1.启动HotDeploymentSample模块的演示程序
+### 2.执行 <a src="http://localhost:8080/say">测试接口</a>, 此时接口返回 <i>hello world</i>
+### 3.执行 <a src="http://localhost:8080/deploy">热部署接口</a>, 将SayService类中的<i>方法</i>都替换掉
+### 4.执行 <a src="http://localhost:8080/say">测试接口</a>, 此时接口返回 <i>我被干掉啦</i> 热部署成功!
+
+<h1>AMS熱部署原理</h1>
+<img src="./img/流程图 (3).png">
+
+
+### 部分开发进程如下, 目前正在开发热部署的后台管理系统和部署之间数据传输的安全校验问题。
 
 ## 7.16
 **mod** HotDeploymentClassLoader, 当热部署的文件夹找不到类,则往上从父类里面找;<br>
@@ -18,6 +40,3 @@
 
 ## 8.4
 **add** add 编写Agent远程调用的回滚(ROLL_BACK)模式,并且通过测试。<br>
-
-<h1>AMS熱部署原理</h1>
-<img src="./img/热部署.png">

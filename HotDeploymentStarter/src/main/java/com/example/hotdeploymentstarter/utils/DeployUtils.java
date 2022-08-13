@@ -287,7 +287,7 @@ public class DeployUtils {
     private boolean registerControllerIfNecessary(Class clazz) {
         String clazzName = convert2camelStyle(clazz.getSimpleName());
         if (!ObjectUtils.isEmpty(clazz.getAnnotation(RestController.class))
-                || !ObjectUtils.isEmpty(Controller.class)) {
+                || !ObjectUtils.isEmpty(clazz.getAnnotation(Controller.class))) {
             try {
                 if (!ctx.containsBean(clazzName)) {
                     ctx.getBeanFactory().createBean(clazz);

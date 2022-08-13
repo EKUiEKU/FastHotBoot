@@ -12,6 +12,7 @@
         <module>Common</module>
         <module>HotDeploymentAgent</module>
         <module>HotDeploymentInjector</module>
+        <module>HotDeploymentWeb</module>
     </modules>
 
     <properties>

@@ -63,7 +63,7 @@ public class ReceiveClassHandler implements HttpHandler {
             }
             Map packageMap = JSON.parseObject(packageNames, Map.class);
 
-            Set<String> fileParamNames = formData.getFileParamNames();
+               Set<String> fileParamNames = formData.getFileParamNames();
             for (String fileName : fileParamNames) {
                 if (ObjectUtils.isEmpty(fileName)) {
                     sendResponseMessage(exchange, HttpStatus.HTTP_BAD_REQUEST, "file name is empty!");

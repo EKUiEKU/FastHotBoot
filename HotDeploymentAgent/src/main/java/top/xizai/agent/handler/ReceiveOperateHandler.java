@@ -66,6 +66,8 @@ public class ReceiveOperateHandler implements HttpHandler {
                 }
 
                 doHandler(agentParams);
+
+                sendResponseMessage(exchange, HttpStatus.HTTP_OK, "success");
             } catch (Throwable e) {
                 sendResponseMessage(exchange, HttpStatus.HTTP_INTERNAL_ERROR, e.getMessage());
             }

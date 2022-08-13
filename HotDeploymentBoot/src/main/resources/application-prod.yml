@@ -1,6 +1,0 @@
-boot:
-  deploy:
-    port: 9821
-    class-file-path: ~
-    salt: dd12863821983db1
-    enable: true
