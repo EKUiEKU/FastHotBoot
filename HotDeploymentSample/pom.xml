@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>top.xizai.deploy</groupId>
-    <artifactId>HotDeploymentSample</artifactId>
+    <artifactId>sample</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>HotDeploymentSample</name>
     <description>HotDeploymentSample</description>

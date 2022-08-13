@@ -18,6 +18,8 @@ public class HotDeploymentClassLoader extends ClassLoader{
         registerAsParallelCapable();
     }
 
+    private static String globalPath;
+
     private static String basePath;
 
     private ClassLoader parentClassLoader;
@@ -29,11 +31,22 @@ public class HotDeploymentClassLoader extends ClassLoader{
     private static HotDeploymentClassLoader instance;
 
     public HotDeploymentClassLoader() {
+        this.basePath = globalPath;
         if (!basePath.isEmpty()
                 && basePath.charAt(basePath.length() - 1) != File.separatorChar) {
             basePath += File.separatorChar;
         }
-        this.basePath = basePath;
+        parentClassLoader = this.getClass().getClassLoader();
+    }
+
+
+    public HotDeploymentClassLoader(String path) {
+        this.basePath = path;
+
+        if (!basePath.isEmpty()
+                && basePath.charAt(basePath.length() - 1) != File.separatorChar) {
+            basePath += File.separatorChar;
+        }
         parentClassLoader = this.getClass().getClassLoader();
     }
 
@@ -114,7 +127,7 @@ public class HotDeploymentClassLoader extends ClassLoader{
      * @param deployClassPath
      */
     public static void resignDeployClassPath(String deployClassPath) {
-        basePath = deployClassPath;
+        globalPath = deployClassPath;
     }
 
     public static HotDeploymentClassLoader getInstance() {
