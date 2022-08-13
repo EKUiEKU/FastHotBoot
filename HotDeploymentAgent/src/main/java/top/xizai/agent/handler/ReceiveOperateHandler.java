@@ -125,6 +125,7 @@ public class ReceiveOperateHandler implements HttpHandler {
             } catch (Exception e) {
                 log.log(Level.WARNING, "deploying class file {0} occur some error, error message is: {1}",
                         new Object[]{deployInfo.getClassFullName(), e.getMessage()});
+                e.printStackTrace();
             }
         } else {
             log.log(Level.WARNING, "class file {0} is be modified!", deployInfo.getClassFullName());

@@ -16,6 +16,15 @@ import java.util.Stack;
  * @DESCRIBE: 全局反射缓存类
  **/
 public class GlobalProxyCache {
+
+    /**
+     * TODO 有没有必要将缓存刷盘到磁盘上? 哪些信息需要缓存？
+     * TODO 程序重启后,是否需要重新加载缓存?
+     * TODO 是否需要提供接口.让后台管理系统可以访问到缓存的信息,比如版本号用于热部署的回滚？
+     * TODO 服务器发布新版本后该有什么缓存清除策略,防止影响到新版本的功能
+     * TODO 是否需要全局定义一个服务器的版本号？
+     */
+
     /**
      * Method的缓存,用来映射
      * Key的命名规则: Class的权限定名 + '$' + MethodName + '$' + MethodParams(参数间$隔开)
