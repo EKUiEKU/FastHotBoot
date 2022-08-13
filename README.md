@@ -12,9 +12,9 @@
 ## 演示
 
 ### 1.启动HotDeploymentSample模块的演示程序
-### 2.执行 <a src="http://localhost:8080/say">测试接口</a>, 此时接口返回 <i>hello world</i>
-### 3.执行 <a src="http://localhost:8080/deploy">热部署接口</a>, 将SayService类中的<i>方法</i>都替换掉
-### 4.执行 <a src="http://localhost:8080/say">测试接口</a>, 此时接口返回 <i>我被干掉啦</i> 热部署成功!
+### 2.执行 [测试接口](http://localhost:8080/say), 此时接口返回 <i>hello world</i>
+### 3.执行 [热部署接口](http://localhost:8080/deploy), 将SayService类中的<i>方法</i>都替换掉
+### 4.执行 [测试接口](http://localhost:8080/say), 此时接口返回 <i>我被干掉啦</i> 热部署成功!
 
 <h1>AMS熱部署原理</h1>
 <img src="./img/流程图 (3).png">

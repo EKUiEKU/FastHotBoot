@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>top.xizai.deploy</groupId>
-    <artifactId>boot</artifactId>
+    <artifactId>HotDeploymentSample</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>HotDeploymentBoot</name>
-    <description>HotDeploymentBoot</description>
+    <name>HotDeploymentSample</name>
+    <description>HotDeploymentSample</description>
     <properties>
         <java.version>11</java.version>
     </properties>

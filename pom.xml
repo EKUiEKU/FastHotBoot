@@ -10,6 +10,7 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>Common</module>
+        <module>HotDeploymentSample</module>
         <module>HotDeploymentAgent</module>
         <module>HotDeploymentInjector</module>
         <module>HotDeploymentWeb</module>
