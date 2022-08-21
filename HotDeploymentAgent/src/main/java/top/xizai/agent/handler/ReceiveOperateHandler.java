@@ -10,11 +10,10 @@ import com.alibaba.fastjson.JSON;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import top.xizai.agent.HotDeploymentAgent;
-import top.xizai.agent.HotDeploymentClassFileTransformer;
-import top.xizai.agent.asm.cache.GlobalProxyCache;
 import top.xizai.deployment.entity.AgentParams;
-import top.xizai.deployment.entity.DeployInfo;
 import top.xizai.deployment.enums.DeployType;
+import top.xizai.deployment.factory.AsmCacheableDeployContext;
+import top.xizai.deployment.factory.DeployDefinition;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,9 +36,16 @@ public class ReceiveOperateHandler implements HttpHandler {
     private final String secret;
     private final Instrumentation inst;
 
-    public ReceiveOperateHandler(Instrumentation inst, String secret) {
+    private AsmCacheableDeployContext deployContext;
+
+    private String classFileLoaderPath;
+
+    public ReceiveOperateHandler(Instrumentation inst, String secret, String classFileLoaderPath) {
         this.inst = inst;
         this.secret = secret;
+        this.classFileLoaderPath = classFileLoaderPath;
+
+        deployContext = new AsmCacheableDeployContext(inst, classFileLoaderPath);
     }
 
 
@@ -69,6 +75,7 @@ public class ReceiveOperateHandler implements HttpHandler {
 
                 sendResponseMessage(exchange, HttpStatus.HTTP_OK, "success");
             } catch (Throwable e) {
+                e.printStackTrace();
                 sendResponseMessage(exchange, HttpStatus.HTTP_INTERNAL_ERROR, e.getMessage());
             }
         } else {
@@ -83,16 +90,12 @@ public class ReceiveOperateHandler implements HttpHandler {
      * @param agentParams
      */
     public void doHandler(AgentParams agentParams) {
-        String classLoaderPath = agentParams.getClassLoaderPath();
-        List<DeployInfo> deployments = agentParams.getDeployments();
-        // 初始化全局数据
-        GlobalProxyCache.classLoaderFullName = agentParams.getClassLoaderFullName();
-        GlobalProxyCache.classLoaderPath = agentParams.getClassLoaderPath();
+        List<DeployDefinition> deployments = agentParams.getDeployments();
 
-        for (DeployInfo deployment : deployments) {
-            String deployClassFilePath = classLoaderPath
+        for (DeployDefinition deployment : deployments) {
+            String deployClassFilePath = classFileLoaderPath
                     + File.separatorChar
-                    + deployment.getClassFullName().replace('.', File.separatorChar)
+                    + deployment.getFullPackageName().replace('.', File.separatorChar)
                     + ".class";
 
             doDeployment(deployment, deployClassFilePath);
@@ -102,15 +105,15 @@ public class ReceiveOperateHandler implements HttpHandler {
 
     /**
      * 对待部署的类进行验证,确保本地的类没有被人动过
-     * @param deployInfo    部署文件的信息
+     * @param definition    部署文件的信息
      * @param classPath     部署文件的地址
      */
-    public void doDeployment(DeployInfo deployInfo, String classPath) {
+    public void doDeployment(DeployDefinition definition, String classPath) {
         // 校验预加载的Class的Hash是否一致
         String classFileHashCode = this.getFileHash(classPath);
-        if (classFileHashCode.equals(deployInfo.getHashCode())) {
+        if (classFileHashCode.equals(definition.getHash())) {
             try {
-                DeployType deployType = deployInfo.getDeployType();
+                DeployType deployType = definition.getDeployType();
                 switch (deployType) {
                     case REPLACE_METHOD:
                         // 检查是否有指定的方法名称,或者是指定的忽略的名称
@@ -121,35 +124,38 @@ public class ReceiveOperateHandler implements HttpHandler {
                         // 根据版本号回滚历史Class对象
                 }
 
-                this.doRealDeployment(deployInfo);
+                this.doRealDeployment(definition);
             } catch (Exception e) {
                 log.log(Level.WARNING, "deploying class file {0} occur some error, error message is: {1}",
-                        new Object[]{deployInfo.getClassFullName(), e.getMessage()});
+                        new Object[]{definition.getFullPackageName(), e.getMessage()});
                 e.printStackTrace();
             }
         } else {
-            log.log(Level.WARNING, "class file {0} is be modified!", deployInfo.getClassFullName());
+            log.log(Level.WARNING, "class file {0} is be modified!", definition.getFullPackageName());
         }
     }
 
     /**
      * 执行热部署
      *
-     * @param deployInfo
+     * @param definition
      * @throws ClassNotFoundException
      * @throws UnmodifiableClassException
      */
-    public void doRealDeployment(DeployInfo deployInfo) throws ClassNotFoundException, UnmodifiableClassException {
-        if (GlobalProxyCache.cacheClassFileTransformer.containsKey(deployInfo.getClassFullName())) {
-            HotDeploymentClassFileTransformer transformer = GlobalProxyCache.cacheClassFileTransformer.get(deployInfo.getClassFullName());
-            inst.removeTransformer(transformer);
-        }
-        HotDeploymentClassFileTransformer latestTransformer = new HotDeploymentClassFileTransformer(deployInfo);
-        inst.addTransformer(latestTransformer, true);
-        //触发transform执行
-        inst.retransformClasses(Class.forName(deployInfo.getClassFullName()));
+    public void doRealDeployment(DeployDefinition definition) throws ClassNotFoundException, UnmodifiableClassException {
+        // if (GlobalProxyCache.cacheClassFileTransformer.containsKey(deployInfo.getClassFullName())) {
+        //     HotDeploymentClassFileTransformer transformer = GlobalProxyCache.cacheClassFileTransformer.get(deployInfo.getClassFullName());
+        //     inst.removeTransformer(transformer);
+        // }
+        // HotDeploymentClassFileTransformer latestTransformer = new HotDeploymentClassFileTransformer(deployInfo);
+        // inst.addTransformer(latestTransformer, true);
+        // //触发transform执行
+        // inst.retransformClasses(Class.forName(deployInfo.getClassFullName()));
+        //
+        // GlobalProxyCache.cacheClassFileTransformer.put(deployInfo.getClassFullName(), latestTransformer);
 
-        GlobalProxyCache.cacheClassFileTransformer.put(deployInfo.getClassFullName(), latestTransformer);
+        deployContext.setDeployDefinition(definition);
+        deployContext.deploy(definition);
     }
 
 

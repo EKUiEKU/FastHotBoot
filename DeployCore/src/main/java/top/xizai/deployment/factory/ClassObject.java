@@ -1,4 +1,4 @@
-package top.xizai.deployment.entity;
+package top.xizai.deployment.factory;
 
 /**
  * @author: WSC

@@ -1,7 +1,4 @@
-package com.example.hotdeploymentstarter.classloader;
-
-import cn.hutool.core.io.FileUtil;
-import com.example.hotdeploymentstarter.utils.DeployUtils;
+package top.xizai.deployment.factory;
 
 import java.io.*;
 import java.util.HashMap;
@@ -11,9 +8,9 @@ import java.util.Objects;
 /**
  * @author: WSC
  * @DATE: 2022/7/11
- * @DESCRIBE:
+ * @DESCRIBE: 热部署类加载器
  **/
-public class HotDeploymentClassLoader extends ClassLoader{
+public class DeployClassLoader extends ClassLoader{
     static {
         registerAsParallelCapable();
     }
@@ -28,9 +25,9 @@ public class HotDeploymentClassLoader extends ClassLoader{
 
     private static Map<String, Boolean> localClassExist = new HashMap<>();
 
-    private static HotDeploymentClassLoader instance;
+    private static DeployClassLoader instance;
 
-    public HotDeploymentClassLoader() {
+    public DeployClassLoader() {
         this.basePath = globalPath;
         if (!basePath.isEmpty()
                 && basePath.charAt(basePath.length() - 1) != File.separatorChar) {
@@ -40,7 +37,7 @@ public class HotDeploymentClassLoader extends ClassLoader{
     }
 
 
-    public HotDeploymentClassLoader(String path) {
+    public DeployClassLoader(String path) {
         this.basePath = path;
 
         if (!basePath.isEmpty()
@@ -50,7 +47,7 @@ public class HotDeploymentClassLoader extends ClassLoader{
         parentClassLoader = this.getClass().getClassLoader();
     }
 
-    public HotDeploymentClassLoader(String basePath, ClassLoader classLoader) {
+    public DeployClassLoader(String basePath, ClassLoader classLoader) {
         super(classLoader);
         if (!basePath.isEmpty()
                 && basePath.charAt(basePath.length() - 1) != File.separatorChar) {
@@ -84,7 +81,7 @@ public class HotDeploymentClassLoader extends ClassLoader{
 
 
     private byte[] loadClassFromFile(String name) throws IOException {
-        String fileName = DeployUtils.convertPackageName2Path(name) + ".class";
+        String fileName = convertPackageName2Path(name) + ".class";
         String filePath = this.basePath + fileName;
 
         Boolean exist = localClassExist.get(filePath);
@@ -92,7 +89,8 @@ public class HotDeploymentClassLoader extends ClassLoader{
             return null;
         }
 
-        if (!FileUtil.exist(filePath)) {
+        File file = new File(filePath);
+        if (!file.exists()) {
             localClassExist.put(fileName, Boolean.FALSE);
             return null;
         }else {
@@ -122,6 +120,10 @@ public class HotDeploymentClassLoader extends ClassLoader{
         return c;
     }
 
+    public static String convertPackageName2Path(String packageName) {
+        return packageName.replace('.', File.separatorChar);
+    }
+
     /**
      * 注册部署类的根目录
      * @param deployClassPath
@@ -130,7 +132,7 @@ public class HotDeploymentClassLoader extends ClassLoader{
         globalPath = deployClassPath;
     }
 
-    public static HotDeploymentClassLoader getInstance() {
-        return new HotDeploymentClassLoader();
+    public static DeployClassLoader getInstance() {
+        return new DeployClassLoader();
     }
 }

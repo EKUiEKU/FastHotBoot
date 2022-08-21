@@ -83,7 +83,7 @@
 
         <dependency>
             <groupId>top.xizai.deployment</groupId>
-            <artifactId>Common</artifactId>
+            <artifactId>DeployCore</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
