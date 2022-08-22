@@ -1,9 +1,7 @@
 package top.xizai.deployment.factory;
 
 import org.objectweb.asm.*;
-import top.xizai.deployment.entity.MethodObject;
 
-import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -16,13 +14,13 @@ import static org.objectweb.asm.Opcodes.*;
  * @DATE: 2022/8/20
  * @DESCRIBE:
  **/
-public class AsmClassFileTransformerAdapter{
+public class AsmClassFileTransformerProcessor {
     private Instrumentation inst;
     private AsmCacheableDeployContext ctx;
 
     private DeployDefinition definition;
 
-    public AsmClassFileTransformerAdapter(String fullClazzName, AsmCacheableDeployContext ctx) {
+    public AsmClassFileTransformerProcessor(String fullClazzName, AsmCacheableDeployContext ctx) {
         this.ctx = ctx;
         definition = ctx.getDeployDefinition(fullClazzName);
     }

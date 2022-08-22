@@ -1,7 +1,6 @@
 package top.xizai.deployment.factory;
 
 import top.xizai.deployment.entity.ByteObject;
-import top.xizai.deployment.entity.DeployInfo;
 import top.xizai.deployment.enums.DeployType;
 
 import java.io.File;
@@ -91,7 +90,7 @@ public class AsmCacheableDeployContext extends CacheableDeployContext implements
                     byte[] bytes = null;
 
                     try {
-                        AsmClassFileTransformerAdapter adapter = new AsmClassFileTransformerAdapter(className, this);
+                        AsmClassFileTransformerProcessor adapter = new AsmClassFileTransformerProcessor(className, this);
                         bytes = adapter.changeMethodByClassBufferMethodVal(classfileBuffer);
                     } catch (Throwable e) {
                         e.printStackTrace();
@@ -161,7 +160,7 @@ public class AsmCacheableDeployContext extends CacheableDeployContext implements
                     return recoverBytes;
                 }
             }
-        }catch (Throwable e) {
+        } catch (Throwable e) {
             e.printStackTrace();
         }
 

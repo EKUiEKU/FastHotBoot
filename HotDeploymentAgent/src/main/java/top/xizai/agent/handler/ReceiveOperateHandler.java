@@ -14,6 +14,7 @@ import top.xizai.deployment.entity.AgentParams;
 import top.xizai.deployment.enums.DeployType;
 import top.xizai.deployment.factory.AsmCacheableDeployContext;
 import top.xizai.deployment.factory.DeployDefinition;
+import top.xizai.deployment.factory.DeployEventListener;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,8 +22,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,7 +34,7 @@ import java.util.logging.Logger;
  * @DATE: 2022/7/15
  * @DESCRIBE:
  **/
-public class ReceiveOperateHandler implements HttpHandler {
+public class ReceiveOperateHandler implements HttpHandler, DeployEventListener {
     private static Logger log = Logger.getLogger(HotDeploymentAgent.class.getSimpleName());
     private final String secret;
     private final Instrumentation inst;
@@ -40,12 +43,15 @@ public class ReceiveOperateHandler implements HttpHandler {
 
     private String classFileLoaderPath;
 
+    private CopyOnWriteArrayList<String> cacheOperaHistory = new CopyOnWriteArrayList<>();
+
     public ReceiveOperateHandler(Instrumentation inst, String secret, String classFileLoaderPath) {
         this.inst = inst;
         this.secret = secret;
         this.classFileLoaderPath = classFileLoaderPath;
 
         deployContext = new AsmCacheableDeployContext(inst, classFileLoaderPath);
+        deployContext.addDeployEventListener(this);
     }
 
 
@@ -181,4 +187,60 @@ public class ReceiveOperateHandler implements HttpHandler {
         return SecureUtil.md5(secret + source + secret);
     }
 
+    /**
+     * 向Web发送操作记录
+     */
+    public void sendOperaLogBatch() {
+
+    }
+
+    /**
+     * 向缓存中插入日志
+     * @param msg
+     */
+    public void insertOperaLog(String msg) {
+        cacheOperaHistory.add(msg);
+    }
+
+
+    // 热部署的各种消息事件
+    // ======↓↓↓======
+
+    @Override
+    public void onStartDeploy(DeployDefinition definition) {
+
+    }
+
+    @Override
+    public void onDeployMethod(DeployDefinition definition, Method method) {
+
+    }
+
+    @Override
+    public void onDeployMethodException(DeployDefinition definition, Method method, Exception e) {
+
+    }
+
+    @Override
+    public void onFinishDeploy(DeployDefinition definition) {
+
+    }
+
+    @Override
+    public void onRollbackDeploy(DeployDefinition definition) {
+
+    }
+
+    @Override
+    public void onValidateMessage(Boolean success, Object obj, String cause) {
+
+    }
+
+    @Override
+    public void onValidateClass(Boolean success, Object obj, String cause) {
+
+    }
+
+    // ======↑↑↑======
+    // 热部署的各种消息事件
 }

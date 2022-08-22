@@ -42,4 +42,20 @@ public interface DeployEventListener {
      * @param definition
      */
     void onRollbackDeploy(DeployDefinition definition);
+
+    /**
+     * 校验消息的结果事件
+     * @param success   是否成功
+     * @param obj       校验的对象
+     * @param cause     如果失败,失败的原因
+     */
+    void onValidateMessage(Boolean success, Object obj, String cause);
+
+    /**
+     * 校验即将要热部署的Class是否合法
+     * @param success   是否成功
+     * @param obj       校验的对象
+     * @param cause     如果失败,失败的原因
+     */
+    void onValidateClass(Boolean success, Object obj, String cause);
 }
