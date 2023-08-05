@@ -1,4 +1,4 @@
-# MyHotDeployment
+# FastHotBoot 快速热部署
 ## 模块介绍
 <ul>
     <li><strong>Common</strong> 存放公共基础类</li>
