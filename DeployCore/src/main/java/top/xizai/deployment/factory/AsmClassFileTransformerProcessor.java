@@ -69,17 +69,19 @@ public class AsmClassFileTransformerProcessor {
 
     private class DeployMethodProxy extends MethodVisitor {
         private String methodName;
+        private String methodDescriptor;
 
         public DeployMethodProxy(int api, MethodVisitor methodVisitor, String methodName, String descriptor) {
             super(api, methodVisitor);
             this.methodName = methodName;
+            this.methodDescriptor = descriptor;
         }
 
         @Override
         public void visitCode() {
             String classLoaderFullName = DeployClassLoader.class.getName();
             String classLoaderClassPath = classLoaderFullName.replace('.', '/');
-
+            String returnClassName = methodDescriptor.split("\\)L")[1].replace(";", "");
             /**
              * 获取类加载器的实例对象
              */
@@ -90,41 +92,36 @@ public class AsmClassFileTransformerProcessor {
             mv.visitLdcInsn(definition.getFullPackageName());
             mv.visitMethodInsn(INVOKEVIRTUAL, classLoaderClassPath, "findClass", "(Ljava/lang/String;)Ljava/lang/Class;", false);
 
-            mv.visitVarInsn(ASTORE, 1);
+            // 复制一份 实例化和根据方法名获取方法实例都要用到
+            mv.visitInsn(DUP);
+
             /**
              * 实例化目标对象
              */
-            mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Class", "newInstance", "()Ljava/lang/Object;", false);
-            mv.visitVarInsn(ASTORE, 2);
+            // 将实例存到成员变量中 invoke的时候使用
+            mv.visitVarInsn(ASTORE, 1);
+
             /**
-             * 获取目标执行的方法
+             * 获取目标执行的方法 入参是方法名和空数组
              */
-            mv.visitVarInsn(ALOAD, 1);
             mv.visitLdcInsn(methodName);
             mv.visitInsn(ICONST_0);
             mv.visitTypeInsn(ANEWARRAY, "java/lang/Class");
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Class", "getMethod", "(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;", false);
-            mv.visitVarInsn(ASTORE, 3);
             /**
-             * 通过反射调用目标方法
+             * 通过反射调用目标方法 入参的实例对象和空数组
              */
-            mv.visitVarInsn(ALOAD, 3);
-            mv.visitVarInsn(ALOAD, 2);
+            // 将成员变量的ins方到栈顶
+            mv.visitVarInsn(ALOAD, 1);
             mv.visitInsn(ICONST_0);
             mv.visitTypeInsn(ANEWARRAY, "java/lang/Object");
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/reflect/Method", "invoke", "(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;", false);
-            mv.visitTypeInsn(CHECKCAST, "java/lang/String");
-            mv.visitVarInsn(ASTORE, 4);
+            mv.visitTypeInsn(CHECKCAST, returnClassName);
             /**
              * 直接返回,不调用原Class的方法
              */
-            mv.visitVarInsn(ALOAD, 4);
             mv.visitInsn(ARETURN);
-            mv.visitMaxs(1, 1);
-            mv.visitEnd();
-
-            super.visitCode();
         }
     }
 

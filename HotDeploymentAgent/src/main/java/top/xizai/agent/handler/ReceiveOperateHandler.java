@@ -81,7 +81,7 @@ public class ReceiveOperateHandler implements HttpHandler, DeployEventListener {
 
                 sendResponseMessage(exchange, HttpStatus.HTTP_OK, "success");
             } catch (Throwable e) {
-                e.printStackTrace();
+                log.log(Level.SEVERE, e.getMessage(), e);
                 sendResponseMessage(exchange, HttpStatus.HTTP_INTERNAL_ERROR, e.getMessage());
             }
         } else {

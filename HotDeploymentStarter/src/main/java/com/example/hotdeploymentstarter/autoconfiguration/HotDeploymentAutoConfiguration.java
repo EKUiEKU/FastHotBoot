@@ -14,13 +14,11 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.ResourceUtils;
 import top.xizai.deployment.constants.FileConstants;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
@@ -52,7 +50,7 @@ public class HotDeploymentAutoConfiguration {
         //注册部署类的根目录
         HotDeploymentClassLoader.resignDeployClassPath(deployUtils.getDeployClassPath());
 
-        this.injectorDeployAgent(properties.getAgentPort(), properties.getSalt());
+        this.injectorDeployAgent(properties.getAgentPort(), properties.getSalt(), properties.getClassFilePath());
         return httpServer;
     }
 
@@ -61,20 +59,15 @@ public class HotDeploymentAutoConfiguration {
      *
      * @throws FileNotFoundException
      */
-    private void injectorDeployAgent(Integer agentPort, String salt) throws FileNotFoundException {
+    private void injectorDeployAgent(Integer agentPort, String salt, String classFilePath) throws FileNotFoundException {
         /**
          * 将本地的jar文件放置系统目录
          */
-        InputStream agentInputStream = this.getClass().getClassLoader().getResourceAsStream(FileConstants.AGENT_NAME);
-        InputStream injectorInputStream = this.getClass().getClassLoader().getResourceAsStream(FileConstants.INJECTOR_NAME);
-
         String agentHomePath = FileUtil.getAbsolutePath(new File(FileConstants.AGENT_HOME));
 
         File agentFile = new File(agentHomePath + File.separatorChar + FileConstants.AGENT_NAME);
         File injectorFile = new File(agentHomePath + File.separatorChar + FileConstants.INJECTOR_NAME);
 
-        FileUtil.writeFromStream(agentInputStream, agentFile);
-        FileUtil.writeFromStream(injectorInputStream, injectorFile);
 
         // 获取当前进程的PID
         String name = ManagementFactory.getRuntimeMXBean().getName();
@@ -82,7 +75,7 @@ public class HotDeploymentAutoConfiguration {
         String pid = names[0];
 
         // Agent的参数
-        String options = agentPort + "-" + salt;
+        String options = agentPort + "-" + salt + "-" + classFilePath + "/deploy/classes";
 
         List<String> list = Arrays.asList(pid, agentFile.getAbsolutePath(), options);
         DeployUtils.executeJar(injectorFile.getAbsolutePath(), list);

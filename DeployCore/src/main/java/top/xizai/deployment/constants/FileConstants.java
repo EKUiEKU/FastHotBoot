@@ -13,7 +13,7 @@ public class FileConstants {
     /**
      * agent文件名
      */
-    public final static String AGENT_NAME = "agent.jar";
+    public final static String AGENT_NAME = "agent10.jar";
     /**
      * ClassPath 注入器文件名
      */

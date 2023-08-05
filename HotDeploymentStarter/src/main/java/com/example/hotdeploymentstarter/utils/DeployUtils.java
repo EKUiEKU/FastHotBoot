@@ -30,6 +30,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import top.xizai.deployment.entity.AgentParams;
 import top.xizai.deployment.entity.DeployInfo;
 import top.xizai.deployment.enums.DeployType;
+import top.xizai.deployment.factory.DeployDefinition;
 
 
 import java.io.BufferedReader;
@@ -235,26 +236,27 @@ public class DeployUtils {
      * @param deploymentClassInfo
      */
     private boolean registerObject(Class clazz, HotDeploymentClass deploymentClassInfo) {
-        // DeployInfo deployInfo = new DeployInfo();
-        // deployInfo.setDeployType(DeployType.REPLACE_CLASS);
-        // deployInfo.setVersion(System.currentTimeMillis());
-        // deployInfo.setHashCode(deploymentClassInfo.getHash());
-        // deployInfo.setClassFullName(deploymentClassInfo.getFullPackageName());
-        //
-        // AgentParams params = new AgentParams();
-        // params.setClassLoaderFullName(HotDeploymentClassLoader.class.getName());
-        // params.setClassLoaderPath(this.getDeployClassPath());
-        // params.setDeployments(Arrays.asList(deployInfo));
-        //
-        // Map deployInfoMap = JSON.parseObject(JSON.toJSONString(params), Map.class);
-        // String sign = SignUtil.signParamsMd5(deployInfoMap);
-        //
-        // params.setSign(sign);
-        //
-        // String url = "127.0.0.1:" + hotDeployProperties.getAgentPort();
-        //
-        // String ret = HttpUtil.post(url, JSON.toJSONString(params));
-        // log.info("remote agent response info:{}", ret);
+        DeployDefinition definition = new DeployDefinition();
+        definition.setDeployType(DeployType.REPLACE_CLASS);
+        definition.setVersion(System.currentTimeMillis());
+        definition.setHash(deploymentClassInfo.getHash());
+        definition.setFullPackageName(deploymentClassInfo.getFullPackageName());
+        definition.setIgnoreMethods(new ArrayList<>());
+        definition.setSpecifyMethods(new ArrayList<>());
+
+        AgentParams params = new AgentParams();
+
+        params.setDeployments(Arrays.asList(definition));
+
+        Map deployInfoMap = JSON.parseObject(JSON.toJSONString(params), Map.class);
+        String sign = SignUtil.signParamsMd5(deployInfoMap);
+
+        params.setSign(sign);
+
+        String url = "127.0.0.1:" + hotDeployProperties.getAgentPort();
+
+        String ret = HttpUtil.post(url, JSON.toJSONString(params));
+        log.info("remote agent response info:{}", ret);
 
         return true;
     }
